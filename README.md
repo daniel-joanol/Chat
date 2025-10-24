@@ -1,2 +1,17 @@
-# Chat
-A chat server built with Java (Spring Boot) to practice WebSocket communication. Designed using Hexagonal Architecture, with PostgreSQL and Flyway for persistence and migrations. Future iterations will include NoSQL integration for message storage and enhanced scalability.
+# 🗨️ Chat Server — WebSocket Practice Project
+This project is a real-time chat server built to explore and practice WebSockets using Java + Spring Boot.
+It’s designed with Hexagonal Architecture (Ports and Adapters) to promote clean separation of concerns and scalability.
+
+## 🚀 Features
+- Real-time messaging via WebSockets
+- PostgreSQL for structured data (users, sessions, etc.)
+- Flyway for database migrations
+- Clean Hexagonal Architecture
+- Modular and extensible design to support future adapters
+
+## 🛠️ Tech Stack
+- Java 17+
+- Spring Boot
+- WebSocket API
+- PostgreSQL + Flyway
+- Hexagonal Architecture
