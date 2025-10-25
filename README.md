@@ -12,6 +12,7 @@ It’s designed with Hexagonal Architecture (Ports and Adapters) to promote clea
 ## 🛠️ Tech Stack
 - Java 21
 - Spring Boot
+- Maven
 - WebSocket API
 - PostgreSQL + Flyway
 - Hexagonal Architecture
