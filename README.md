@@ -15,4 +15,5 @@ It’s designed with Hexagonal Architecture (Ports and Adapters) to promote clea
 - Maven
 - WebSocket API
 - PostgreSQL + Flyway
+- Keycloak
 - Hexagonal Architecture
