@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- CREATE USERS
-CREATE TABLE IF NOT EXISTS user(
+CREATE TABLE IF NOT EXISTS _user(
   id UUID DEFAULT uuid_generate_v4(),
   username text NOT NULL UNIQUE,
   email text NOT NULL UNIQUE,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS contact(
   created_at TIMESTAMPTZ DEFAULT now(),
   is_active bool DEFAULT true,
   CONSTRAINT contact_pkey PRIMARY KEY (id),
-  CONSTRAINT contact_user_id_fkey FOREIGN KEY (user_id) REFERENCES user(id),
-  CONSTRAINT contact_friend_id_fkey FOREIGN KEY (friend_id) REFERENCES user(id),
+  CONSTRAINT contact_user_id_fkey FOREIGN KEY (user_id) REFERENCES _user(id),
+  CONSTRAINT contact_friend_id_fkey FOREIGN KEY (friend_id) REFERENCES _user(id),
   CONSTRAINT contact_ukey UNIQUE (user_id, friend_id)
 );

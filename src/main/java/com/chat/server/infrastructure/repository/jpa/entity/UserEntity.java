@@ -26,7 +26,7 @@ import lombok.experimental.Accessors;
 @Setter
 @Accessors(chain = true)
 @Entity
-@Table(name = "user")
+@Table(name = "_user")
 public class UserEntity {
 
   @Id
