@@ -6,7 +6,9 @@ import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
 
+import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.enumerator.UserStatusEnum;
+import com.chat.server.domain.enumerator.UserTypeEnum;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,8 +26,8 @@ import lombok.experimental.Accessors;
 @Setter
 @Accessors(chain = true)
 @Entity
-@Table(name = "internal_user")
-public class InternalUserEntity {
+@Table(name = "user")
+public class UserEntity {
 
   @Id
   @GeneratedValue(generator = "UUID")
@@ -34,15 +36,24 @@ public class InternalUserEntity {
 
   private String username;
   private String email;
+  private char[] password;
   private ZonedDateTime createdAt;
 
   @Enumerated(EnumType.STRING)
   private UserStatusEnum status;
+
+  @Enumerated(EnumType.STRING)
+  private UserTypeEnum type;
+
+  @Enumerated(EnumType.STRING)
+  private UserRoleEnum role;
 
   @OneToMany(
       mappedBy = "user",
       fetch = FetchType.LAZY,
       orphanRemoval = true)
   private List<ContactEntity> contacts;
+
+  private Boolean isActive;
   
 }

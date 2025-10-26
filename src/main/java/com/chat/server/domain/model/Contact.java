@@ -13,8 +13,9 @@ import lombok.experimental.Accessors;
 public class Contact {
   
   private UUID id;
-  private InternalUser user;
-  private InternalUser friend;
+  private User user;
+  private User friend;
   private ZonedDateTime createdAt;
+  private Boolean isActive;
 
 }

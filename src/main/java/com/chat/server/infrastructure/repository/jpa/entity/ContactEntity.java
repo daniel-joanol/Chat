@@ -29,12 +29,14 @@ public class ContactEntity {
 
   @ManyToOne
   @JoinColumn(name = "user_id")
-  private InternalUserEntity user;
+  private UserEntity user;
 
   @ManyToOne
   @JoinColumn(name = "friend_id")
-  private InternalUserEntity friend;
+  private UserEntity friend;
 
   private ZonedDateTime createdAt;
+
+  private Boolean isActive;
 
 }
