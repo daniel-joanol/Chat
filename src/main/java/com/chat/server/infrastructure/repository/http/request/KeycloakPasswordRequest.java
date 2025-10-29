@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class KeycloakPasswordRequest {
   
-  private String value;
+  private char[] value;
   private String type;
   private Boolean temporary;
   

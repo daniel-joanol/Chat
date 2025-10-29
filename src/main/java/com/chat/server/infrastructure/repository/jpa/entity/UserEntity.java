@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
 
-import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.enumerator.UserStatusEnum;
 import com.chat.server.domain.enumerator.UserTypeEnum;
 
@@ -16,6 +15,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -35,6 +36,8 @@ public class UserEntity {
   private UUID id;
 
   private String username;
+  private String firstName;
+  private String lastName;
   private String email;
   private char[] password;
   private ZonedDateTime createdAt;
@@ -45,8 +48,9 @@ public class UserEntity {
   @Enumerated(EnumType.STRING)
   private UserTypeEnum type;
 
-  @Enumerated(EnumType.STRING)
-  private UserRoleEnum role;
+  @ManyToOne
+  @JoinColumn(name = "role_id")
+  private RoleEntity role;
 
   @OneToMany(
       mappedBy = "user",

@@ -44,8 +44,9 @@ public class ChatServerApplication {
 - Add client role ADMIN to the user `admin` (the one set on docker-compose.yml).
 - Create the default user with username `default_internal_user`, with `no-actions-required` and role `ADMIN`.
 
-### Add client id to database
+### Add keycloak ids to database
 - Add the client id (the actual UUID) to the table property, name `DEFAULT_KEYCLOAK_CLIENT_ID`.
+- Add the role ids to the table role.
 
 ### Add admin user to database.
 - Add the user to the table `_user` on database.

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class UserFactory {
   
   public static User createInternalUser(String username, String email, char[] password) {
+    Role role = new Role().setName(UserRoleEnum.ADMIN);
     return new User()
         .setUsername(username)
         .setEmail(email)
@@ -21,12 +22,13 @@ public class UserFactory {
         .setCreatedAt(TimeUtil.now())
         .setStatus(UserStatusEnum.OFFLINE)
         .setType(UserTypeEnum.INTERNAL)
-        .setRole(UserRoleEnum.USER)
+        .setRole(role)
         .setIsActive(true)
         .setContacts(new ArrayList<>());
   }
 
   public static User createExternalUser(String username, String email, char[] password) {
+    Role role = new Role().setName(UserRoleEnum.USER);
     return new User()
         .setUsername(username)
         .setEmail(email)
@@ -34,7 +36,7 @@ public class UserFactory {
         .setCreatedAt(TimeUtil.now())
         .setStatus(UserStatusEnum.OFFLINE)
         .setType(UserTypeEnum.EXTERNAL)
-        .setRole(UserRoleEnum.ADMIN)
+        .setRole(role)
         .setIsActive(true)
         .setContacts(new ArrayList<>());
   }

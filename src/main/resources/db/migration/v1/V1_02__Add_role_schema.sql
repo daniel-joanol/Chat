@@ -18,7 +18,7 @@ END $$;
 CREATE TABLE IF NOT EXISTS role(
   id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
-  keycloak_id BIGSERIAL UNIQUE
+  keycloak_id UUID UNIQUE
 );
 
 -- INSERT ROLES
@@ -37,3 +37,45 @@ INSERT INTO property(name, value) VALUES
   ('DEFAULT_KEYCLOAk_USER_PASS', 'UPDATE PASSWORD ON IMPLANTATION'),
   ('DEFAULT_KEYCLOAK_CLIENT_ID', 'UPDATE CLIENT ID')
   ON CONFLICT DO NOTHING;
+
+-- ADD COLUMNS TO USER
+DO $$
+BEGIN
+
+  -- ADD ROLE
+  IF EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'chat'
+        AND table_name = '_user'
+        AND column_name = 'role'
+  ) THEN
+    ALTER TABLE _user DROP COLUMN role;
+    ALTER TABLE _user 
+      ADD COLUMN role_id int8,
+      ADD CONSTRAINT user_role_fkey FOREIGN KEY (role_id) REFERENCES role (id);
+  END IF;
+
+  -- ADD FIRST NAME
+  IF EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'chat'
+        AND table_name = '_user'
+        AND column_name = 'first_name'
+  ) THEN
+    ALTER TABLE _user ADD COLUMN first_name text NOT NULL;
+  END IF;
+
+  -- ADD LAST NAME
+  IF EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'chat'
+        AND table_name = '_user'
+        AND column_name = 'last_name'
+  ) THEN
+    ALTER TABLE _user ADD COLUMN last_name text NOT NULL;
+  END IF;
+
+END $$;
