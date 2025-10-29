@@ -1,9 +1,15 @@
 package com.chat.server.infrastructure.repository.http;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+
+import com.chat.server.infrastructure.repository.http.request.KeycloakPasswordRequest;
+import com.chat.server.infrastructure.repository.http.request.KeycloakRoleRequest;
+import com.chat.server.infrastructure.repository.http.request.KeycloakUserRequest;
 
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.JsonNode;
@@ -33,6 +39,37 @@ public class KeycloakHttpRepository {
         .field("client_id", client)
         .field("scope", "openid")
         .field("client_secret", clientSecret)
+        .asJson();
+  }
+
+  public HttpResponse<JsonNode> createUser(String jwt, KeycloakUserRequest request) {
+    String endpoint = String.format("%s/admin/realms/%s/users", url, realm);
+    return Unirest.post(endpoint)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .body(request)
+        .asJson();
+  }
+
+  public HttpResponse<JsonNode> updatePassword(String jwt, KeycloakPasswordRequest request, UUID userId) {
+    String endpoint = String.format("%s/admin/realms/%s/users/%s/reset-password", url, realm, userId);
+    return Unirest.put(endpoint)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .body(request)
+        .asJson();
+  }
+
+  public HttpResponse<JsonNode> addRoleToUser(String jwt, KeycloakRoleRequest request, UUID userId) {
+    String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, request.getClientId());
+    return Unirest.post(endpoint)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .body(request)
+        .asJson();
+  }
+
+  public HttpResponse<JsonNode> deleteUser(String jwt, UUID userId) {
+    String endpoint = String.format("%s/admin/realms/%s/users/%s", url, realm, userId);
+    return Unirest.delete(endpoint)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .asJson();
   }
 
