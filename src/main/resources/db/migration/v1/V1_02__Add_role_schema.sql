@@ -1,0 +1,38 @@
+-- REMOVE COLUMN PASSWORD FROM _USER
+DO $$
+BEGIN
+
+  IF EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'chat'
+        AND table_name = '_user'
+        AND column_name = 'password'
+  ) THEN
+    ALTER TABLE _user DROP COLUMN password;
+  END IF;
+
+END $$;
+
+-- CREATE ROLE TABLE
+CREATE TABLE IF NOT EXISTS role(
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  keycloak_id BIGSERIAL UNIQUE
+);
+
+-- INSERT ROLES
+INSERT INTO role(name) VALUES ('ADMIN'), ('USER') ON CONFLICT DO NOTHING;
+
+-- CREATE PROPERTY TABLE
+CREATE TABLE IF NOT EXISTS property(
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  value TEXT NOT NULL
+);
+
+-- INSERT PROPERTIES
+INSERT INTO property(name, value) VALUES 
+  ('DEFAULT_KEYCLOAK_USER', 'default_internal_user'),
+  ('DEFAULT_KEYCLOAL_USER_PASS', 'UPDATE PASSWORD ON IMPLANTATION')
+  ON CONFLICT DO NOTHING;
