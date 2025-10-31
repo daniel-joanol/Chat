@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.repository.http;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -7,9 +8,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.chat.server.infrastructure.repository.http.request.KeycloakPasswordRequest;
-import com.chat.server.infrastructure.repository.http.request.KeycloakRoleRequest;
-import com.chat.server.infrastructure.repository.http.request.KeycloakUserRequest;
+import com.chat.server.infrastructure.dao.http.request.KeycloakFiltersRequest;
+import com.chat.server.infrastructure.dao.http.request.KeycloakPasswordRequest;
+import com.chat.server.infrastructure.dao.http.request.KeycloakRoleRequest;
+import com.chat.server.infrastructure.dao.http.request.KeycloakUserRequest;
 
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.JsonNode;
@@ -50,6 +52,21 @@ public class KeycloakHttpRepository {
         .asJson();
   }
 
+  public HttpResponse<JsonNode> getUser(String jwt, KeycloakFiltersRequest filter) {
+    String endpoint = String.format("%s/admin/realms/%s/users", url, realm);
+    Map<String, Object> queryParameters = Map.of(
+        "briefRepresentation", true,
+        "first", filter.getFirst(),
+        "max", filter.getMax(),
+        "exact", true,
+        "search", filter.getSearch()
+    );
+    return Unirest.get(endpoint)
+        .routeParam(queryParameters)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .asJson();
+  }
+
   public HttpResponse<JsonNode> updatePassword(String jwt, KeycloakPasswordRequest request, UUID userId) {
     String endpoint = String.format("%s/admin/realms/%s/users/%s/reset-password", url, realm, userId);
     return Unirest.put(endpoint)
@@ -59,7 +76,7 @@ public class KeycloakHttpRepository {
   }
 
   public HttpResponse<JsonNode> addRoleToUser(String jwt, KeycloakRoleRequest request, UUID userId) {
-    String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, request.getClientId());
+    String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, request.getContainerId());
     return Unirest.post(endpoint)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .body(request)
@@ -72,5 +89,7 @@ public class KeycloakHttpRepository {
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .asJson();
   }
+
+  // TODO: add unirest exceptions to controller advice
 
 }

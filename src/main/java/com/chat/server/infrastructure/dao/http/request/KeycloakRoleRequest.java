@@ -1,6 +1,8 @@
-package com.chat.server.infrastructure.repository.http.request;
+package com.chat.server.infrastructure.dao.http.request;
 
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +15,9 @@ public class KeycloakRoleRequest {
   
   private UUID id;
   private String name;
-  private String description;
-  private UUID clientId;
+  private final String description = "";
+
+  @JsonIgnore
+  private UUID containerId;
 
 }

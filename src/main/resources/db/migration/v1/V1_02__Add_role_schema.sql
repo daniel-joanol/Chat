@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS property(
 -- INSERT PROPERTIES
 INSERT INTO property(name, value) VALUES 
   ('DEFAULT_KEYCLOAK_USER', 'default_internal_user'),
+  ('DEFAULT_KEYCLOAK_USER_ID', 'UPDATE USER ID'),
   ('DEFAULT_KEYCLOAk_USER_PASS', 'UPDATE PASSWORD ON IMPLANTATION'),
   ('DEFAULT_KEYCLOAK_CLIENT_ID', 'UPDATE CLIENT ID')
   ON CONFLICT DO NOTHING;
@@ -57,7 +58,7 @@ BEGIN
   END IF;
 
   -- ADD FIRST NAME
-  IF EXISTS (
+  IF NOT EXISTS (
       SELECT 1
       FROM information_schema.columns
       WHERE table_schema = 'chat'
@@ -68,14 +69,25 @@ BEGIN
   END IF;
 
   -- ADD LAST NAME
-  IF EXISTS (
+  IF NOT EXISTS (
       SELECT 1
       FROM information_schema.columns
       WHERE table_schema = 'chat'
         AND table_name = '_user'
         AND column_name = 'last_name'
   ) THEN
-    ALTER TABLE _user ADD COLUMN last_name text NOT NULL;
+    ALTER TABLE _user ADD COLUMN last_name text;
+  END IF;
+
+  -- ADD IS_ENABLED
+  IF EXISTS (
+    SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'chat'
+        AND table_name = '_user'
+        AND column_name = 'is_active'
+  ) THEN
+    ALTER TABLE _user RENAME COLUMN  is_active TO is_enabled;
   END IF;
 
 END $$;

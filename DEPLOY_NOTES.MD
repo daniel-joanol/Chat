@@ -42,10 +42,11 @@ public class ChatServerApplication {
 - Copy the `client-secret` from credentials.
 - Set the environmental property `KEYCLOAK_CLIENT_SECRET` with the client-secret value.
 - Add client role ADMIN to the user `admin` (the one set on docker-compose.yml).
-- Create the default user with username `default_internal_user`, with `no-actions-required` and role `ADMIN`.
+- Create the default user with username `default_internal_user`, with `no-actions-required` and roles `ADMIN` from client `chat` and every role from client `master-realm`.
 
 ### Add keycloak ids to database
 - Add the client id (the actual UUID) to the table property, name `DEFAULT_KEYCLOAK_CLIENT_ID`.
+- Add the default_internal_user id to the table property, name `DEFAULT_KEYCLOAK_USER_ID`.
 - Add the role ids to the table role.
 
 ### Add admin user to database.

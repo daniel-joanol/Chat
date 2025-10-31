@@ -16,6 +16,6 @@ public class Role {
   private Long id;
   private UserRoleEnum name;
   private UUID keycloakId;
-  private UUID containerId;
+  private UUID clientId;
 
 }

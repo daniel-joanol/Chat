@@ -9,7 +9,7 @@ import com.chat.server.infrastructure.repository.jpa.entity.RoleEntity;
 @Mapper(componentModel = "spring")
 public interface RoleEntityMapper {
   
-  @Mapping(target = "containerId", ignore = true)
+  @Mapping(target = "clientId", ignore = true)
   Role toDomain(RoleEntity entity);
 
   RoleEntity toEntity(Role domain);

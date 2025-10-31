@@ -26,7 +26,7 @@ public class User {
   private UserStatusEnum status;
   private UserTypeEnum type;
   private Role role;
-  private Boolean isActive;
-  private List<User> contacts;
+  private Boolean isEnabled;
+  private List<Contact> contacts;
   
 }

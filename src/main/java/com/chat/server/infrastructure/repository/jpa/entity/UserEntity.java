@@ -58,6 +58,6 @@ public class UserEntity {
       orphanRemoval = true)
   private List<ContactEntity> contacts;
 
-  private Boolean isActive;
+  private Boolean isEnabled;
   
 }

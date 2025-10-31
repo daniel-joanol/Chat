@@ -1,4 +1,4 @@
-package com.chat.server.infrastructure.repository.http.request;
+package com.chat.server.infrastructure.dao.http.request;
 
 import lombok.Getter;
 import lombok.Setter;

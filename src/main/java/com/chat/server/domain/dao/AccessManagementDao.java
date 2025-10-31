@@ -8,7 +8,13 @@ public interface AccessManagementDao {
   
   String login(String username, char[] password);
 
-  String createUser(String jwt, User user);
+  void createUser(String jwt, User user);
+
+  User getUser(String jwt, String username);
+
+  void updatePassword(String jwt, User user);
+
+  void addRole(String jwt, User user);
 
   void deleteUser(String jwt, UUID userId);
 
