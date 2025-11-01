@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.7</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.chat</groupId>
 	<artifactId>server</artifactId>
@@ -29,8 +29,20 @@
 	<properties>
 		<java.version>21</java.version>
     	<flyway.version>11.15.0</flyway.version>
+      <mapstruct.processor.version>1.6.3</mapstruct.processor.version>
 	</properties>
 	<dependencies>
+
+    <!-- Security -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-client</artifactId>
+    </dependency>
 
     <!-- Mapper -->
 		<dependency>
@@ -38,6 +50,12 @@
 			<artifactId>mapstruct</artifactId>
 			<version>1.6.3</version>
 		</dependency>
+
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct-processor</artifactId>
+      <version>${mapstruct.processor.version}</version>
+    </dependency>
 
     <!-- Database -->
 		<dependency>
@@ -81,6 +99,19 @@
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 
+    <dependency>
+      <groupId>com.konghq</groupId>
+      <artifactId>unirest-java-core</artifactId>
+      <version>4.5.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.konghq</groupId>
+      <artifactId>unirest-objectmapper-jackson</artifactId>
+      <version>4.2.9</version>
+    </dependency>
+
     <!-- Helpers -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -101,10 +132,26 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
 
-	<build>
+    <dependency>
+      <groupId>org.jeasy</groupId>
+      <artifactId>easy-random-core</artifactId>
+      <version>5.0.0</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
 		<plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -117,6 +164,11 @@
 							<artifactId>lombok</artifactId>
 							<version>1.18.36</version>
 						</path>
+            <path>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.processor.version}</version>
+            </path>
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>

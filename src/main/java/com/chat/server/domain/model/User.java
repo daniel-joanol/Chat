@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.enumerator.UserStatusEnum;
 import com.chat.server.domain.enumerator.UserTypeEnum;
 
@@ -19,13 +18,15 @@ public class User {
 
   private UUID id;
   private String username;
+  private String firstName;
+  private String lastName;
   private String email;
   private char[] password;
   private ZonedDateTime createdAt;
   private UserStatusEnum status;
   private UserTypeEnum type;
-  private UserRoleEnum role;
-  private Boolean isActive;
-  private List<User> contacts;
+  private Role role;
+  private Boolean isEnabled;
+  private List<Contact> contacts;
   
 }

@@ -26,9 +26,14 @@ public interface ContactEntityMapper {
     return userMapper.toEntity(user);
   }
 
-  @Mapping(target = "user.contacts", ignore = true)
-  @Mapping(target = "friend.contacts", ignore = true)
+  @Mapping(target = "user", source = "user", qualifiedByName = "userToDomain")
+  @Mapping(target = "friend", source = "friend", qualifiedByName = "userToDomain")
   Contact toDomain(ContactEntity entity);
   List<Contact> toDomain(List<ContactEntity> entities);
+
+  @Named("userToDomain")
+  default User userToDomain(UserEntity user) {
+    return userMapper.toDomainWithoutContacts(user);
+  }
   
 }
