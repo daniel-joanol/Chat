@@ -11,11 +11,9 @@ import com.chat.server.domain.service.UserService;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class DefaultAccessManagementService implements AccessManagementService {
   
   private final AccessManagementDao dao;
@@ -24,9 +22,9 @@ public class DefaultAccessManagementService implements AccessManagementService {
   @Override
   public String login(String username, char[] password) {
     if (!userService.existsByUsername(username)) {
-      String errorMessage = String.format("Username not found: %s", username);
-      log.error(errorMessage);
-      throw new EntityNotFoundException(errorMessage);
+      String externalMessage = "Username not found";
+      String internalMessage = String.format("U%s: %s", externalMessage, username);
+      throw new EntityNotFoundException(externalMessage, internalMessage);
     }
 
     return dao.login(username, password);

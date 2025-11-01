@@ -25,6 +25,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GlobalDefaultExceptionHandler {
 
+  @ExceptionHandler(AuthenticationFailedException.class)
+  public ResponseEntity<ErrorResponse> handleAuthenticationFailedException(AuthenticationFailedException e, HttpServletRequest req) {
+    ErrorResponse response = this.logError(e);
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+  }
+
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e, HttpServletRequest req) {
+    ErrorResponse response = this.logError(e);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+  }
+
   @ExceptionHandler(InternalException.class)
   public ResponseEntity<ErrorResponse> handleInternalException(InternalException e, HttpServletRequest req) {
     ErrorResponse response = this.logError(e);
@@ -35,18 +47,6 @@ public class GlobalDefaultExceptionHandler {
   public ResponseEntity<ErrorResponse> handleGenericException(Exception e, HttpServletRequest req) {
     ErrorResponse response = this.logError(e);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-  }
-
-  @ExceptionHandler(EntityNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e, HttpServletRequest req) {
-    ErrorResponse response = this.logError(e);
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-  }
-
-  @ExceptionHandler(AuthenticationFailedException.class)
-  public ResponseEntity<ErrorResponse> handleAuthenticationFailedException(AuthenticationFailedException e, HttpServletRequest req) {
-    ErrorResponse response = this.logError(e);
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
   }
   
   private ErrorResponse logError(Exception e) {

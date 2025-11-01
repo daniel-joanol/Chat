@@ -18,11 +18,9 @@ import com.chat.server.infrastructure.repository.http.KeycloakHttpRepository;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.JsonNode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Component
-@Slf4j
 public class AccessManagementHttpDao implements AccessManagementDao {
 
   private final KeycloakHttpRepository repository;
@@ -32,13 +30,12 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   public String login(String username, char[] password) {
     HttpResponse<JsonNode> response = repository.login(username, password)
         .ifFailure(res -> {
-          log.error(String.format(
+          String message = String.format(
               "Error authenticating %s on Keycloak. Petition response: %d, {%s}",
               username, res.getStatus(), res.getBody()
-          ));
-          throw new AuthenticationFailedException();
+          );
+          throw new AuthenticationFailedException(message);
         });
-    // TODO: return 500 for JSONException on controller advice
     return response.getBody().getObject().getString("access_token");
   }
 
@@ -46,11 +43,11 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   public void deleteUser(String jwt, UUID userId) {
     repository.deleteUser(jwt, userId)
         .ifFailure(res -> {
-          log.error(String.format(
+          String message = String.format(
               "Error deleting %s from Keycloak. Petition response: %d, {%s}",
               userId, res.getStatus(), res.getBody()
-          ));
-          throw new InternalException();
+          );
+          throw new InternalException(message);
         });
   }
 
@@ -59,11 +56,11 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     KeycloakUserRequest userRequest = mapper.toUserRequest(user);
     repository.createUser(jwt, userRequest)
         .ifFailure(res -> {
-          log.error(String.format(
+          String message = String.format(
               "Error creating %s on Keycloak. Petition response: %d, {%s}",
               user.getUsername(), res.getStatus(), res.getBody()
-          ));
-          throw new InternalException();
+          );
+          throw new InternalException(message);
         });    
   }
 
@@ -72,11 +69,11 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     KeycloakFiltersRequest filtersRequest = KeycloakFiltersRequest.singleUserFilter(username);
     HttpResponse<JsonNode> getUserResponse = repository.getUser(jwt, filtersRequest)
         .ifFailure(res -> {
-          log.error(String.format(
+          String message = String.format(
               "Error getting %s from Keycloak. Petition response: %d, {%s}",
               username, res.getStatus(), res.getBody()
-          ));
-          throw new InternalException();
+          );
+          throw new InternalException(message);
         });
     
     return mapper.toUser(getUserResponse.getBody().getArray().getJSONObject(0));
@@ -87,11 +84,11 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     KeycloakRoleRequest roleRequest = mapper.toRoleRequest(user.getRole());
     repository.addRoleToUser(jwt, roleRequest, user.getId())
         .ifFailure(res -> {
-          log.error(String.format(
+          String message = String.format(
               "Error adding role %s to %s on Keycloak. Petition response: %d, {%s}",
               user.getRole().getName(), user.getId(), res.getStatus(), res.getBody()
-          ));
-          throw new InternalException();
+          );
+          throw new InternalException(message);
         });
   }
 
@@ -100,11 +97,11 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     KeycloakPasswordRequest passwordRequest = new KeycloakPasswordRequest(user.getPassword());
     repository.updatePassword(jwt, passwordRequest, user.getId())
         .ifFailure(res -> {
-          log.error(String.format(
+          String message = String.format(
               "Error updating password for user %s on Keycloak. Petition response: %d, {%s}",
               user.getId(), res.getStatus(), res.getBody()
-          ));
-          throw new InternalException();
+          );
+          throw new InternalException(message);
         });
   }
 
