@@ -12,6 +12,7 @@ import com.chat.server.infrastructure.dao.http.request.KeycloakPasswordRequest;
 import com.chat.server.infrastructure.dao.http.request.KeycloakRoleRequest;
 import com.chat.server.infrastructure.dao.http.request.KeycloakUserRequest;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
+import com.chat.server.infrastructure.exception.InternalException;
 import com.chat.server.infrastructure.repository.http.KeycloakHttpRepository;
 
 import kong.unirest.core.HttpResponse;
@@ -49,7 +50,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
               "Error deleting %s from Keycloak. Petition response: %d, {%s}",
               userId, res.getStatus(), res.getBody()
           ));
-          throw new InternalError();
+          throw new InternalException();
         });
   }
 
@@ -62,7 +63,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
               "Error creating %s on Keycloak. Petition response: %d, {%s}",
               user.getUsername(), res.getStatus(), res.getBody()
           ));
-          throw new InternalError();
+          throw new InternalException();
         });    
   }
 
@@ -75,7 +76,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
               "Error getting %s from Keycloak. Petition response: %d, {%s}",
               username, res.getStatus(), res.getBody()
           ));
-          throw new InternalError();
+          throw new InternalException();
         });
     
     return mapper.toUser(getUserResponse.getBody().getArray().getJSONObject(0));
@@ -90,7 +91,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
               "Error adding role %s to %s on Keycloak. Petition response: %d, {%s}",
               user.getRole().getName(), user.getId(), res.getStatus(), res.getBody()
           ));
-          throw new InternalError();
+          throw new InternalException();
         });
   }
 
@@ -103,7 +104,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
               "Error updating password for user %s on Keycloak. Petition response: %d, {%s}",
               user.getId(), res.getStatus(), res.getBody()
           ));
-          throw new InternalError();
+          throw new InternalException();
         });
   }
 

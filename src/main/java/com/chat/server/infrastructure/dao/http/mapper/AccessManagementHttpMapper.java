@@ -36,7 +36,7 @@ public interface AccessManagementHttpMapper {
         .setId(UUID.fromString(json.getString("id")))
         .setUsername(json.getString("username"))
         .setFirstName(json.getString("firstName"))
-        .setLastName(json.getString("lastName"))
+        .setLastName(json.has("lastName") ? json.getString("lastName") : "")
         .setEmail(json.getString("email"))
         .setIsEnabled(json.getBoolean("enabled"));
   }
