@@ -33,6 +33,10 @@ public interface UserEntityMapper {
   @Mapping(target = "role", source = "role", qualifiedByName = "roleToDomain")
   User toDomain(UserEntity entity);
 
+  @Mapping(target = "contacts", ignore = true)
+  @Mapping(target = "role", source = "role", qualifiedByName = "roleToDomain")
+  User toDomainWithoutContacts(UserEntity entity);
+
   @Named("contactsToDomain")
   default List<Contact> contactsToDomain(List<ContactEntity> contacts) {
     return contactMapper.toDomain(contacts);
