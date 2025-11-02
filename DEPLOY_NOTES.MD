@@ -15,7 +15,7 @@
 ### Generate an encryption key
 - Generate an encryption key and them use it to encrypt the password that will be used for the default Keycloak user.
 - Note: The default keycloak user is the one used in the keycloak petitions (to create user, update password, etc).
-- Save the key as the environmental property CHAT_ENCRYPTION_KEY.
+- Save the key as the environmental property `CHAT_ENCRYPTION_KEY`.
 - Save the encrypted password as the value of the property `DEFAULT_KEYCLOAL_USER_PASS` on databse, table `property`.
 - Code example: 
 ```
@@ -45,9 +45,8 @@ public class ChatServerApplication {
 - Create the default user with username `default_internal_user`, with `no-actions-required` and roles `ADMIN` from client `chat` and every role from client `master-realm`.
 
 ### Add keycloak ids to database
-- Add the client id (the actual UUID) to the table property, name `DEFAULT_KEYCLOAK_CLIENT_ID`.
-- Add the default_internal_user id to the table property, name `DEFAULT_KEYCLOAK_USER_ID`.
-- Add the role ids to the table role.
+- Set the environmental property `KEYCLOAk_CLIENT_CONTAINER_ID` with the client id (the actual UUID).
+- Add the role ids to the role table.
 
 ### Add admin user to database.
-- Add the user to the table `_user` on database.
+- Add the user to the `_user` table on database.

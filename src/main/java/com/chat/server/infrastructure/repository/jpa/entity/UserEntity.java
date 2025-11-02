@@ -35,12 +35,15 @@ public class UserEntity {
   @UuidGenerator
   private UUID id;
 
+  private UUID keycloakId;
   private String username;
   private String firstName;
   private String lastName;
   private String email;
   private char[] password;
   private ZonedDateTime createdAt;
+  private Boolean isEnabled;
+  private Boolean isCreationCompleted;
 
   @Enumerated(EnumType.STRING)
   private UserStatusEnum status;
@@ -57,7 +60,5 @@ public class UserEntity {
       fetch = FetchType.LAZY,
       orphanRemoval = true)
   private List<ContactEntity> contacts;
-
-  private Boolean isEnabled;
   
 }

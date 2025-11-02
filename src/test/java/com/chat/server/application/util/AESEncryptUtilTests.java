@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AESEncryptUtilTests {
   
-  private AESEncryptUtil sut = new AESEncryptUtil();
+  private AESEncryptUtil sut = new AESEncryptUtil("KEY");
 
   @Test
   @DisplayName("Should generate a key, encrypt a value than decrypt it. " 

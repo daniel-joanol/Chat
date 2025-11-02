@@ -27,7 +27,7 @@ public class KeycloakHttpRepository {
   private String realm;
 
   @Value("${spring.security.oauth2.client.registration.keycloak.client-id}")
-  private String client;
+  private String clientName;
 
   @Value("${spring.security.oauth2.client.registration.keycloak.client-secret}")
   private String clientSecret;
@@ -38,7 +38,7 @@ public class KeycloakHttpRepository {
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         .field("username", username)
         .field("password", new String(password))
-        .field("client_id", client)
+        .field("client_id", clientName)
         .field("scope", "openid")
         .field("client_secret", clientSecret)
         .asJson();
@@ -89,7 +89,5 @@ public class KeycloakHttpRepository {
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .asJson();
   }
-
-  // TODO: add unirest exceptions to controller advice
 
 }

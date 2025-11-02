@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.chat.server.domain.util.EncryptUtil;
@@ -23,12 +24,23 @@ public class AESEncryptUtil implements EncryptUtil {
   private static final String ALGORITHM = "AES";
   private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
 
+  private final String encryptionKey;
+
+  public AESEncryptUtil(@Value("${encryption.key}") String encryptionKey) {
+    this.encryptionKey = encryptionKey;
+  }
+
   @Override
   public String generateKey() throws NoSuchAlgorithmException {
     KeyGenerator keyGenerator = KeyGenerator.getInstance(ALGORITHM);
     keyGenerator.init(256);
     SecretKey key = keyGenerator.generateKey();
     return Base64.getEncoder().encodeToString(key.getEncoded());
+  }
+
+  @Override
+  public char[] decrypt(char[] encryptedValue) throws Exception {
+    return this.decrypt(encryptedValue, encryptionKey);
   }
 
   @Override
@@ -44,6 +56,11 @@ public class AESEncryptUtil implements EncryptUtil {
     byte[] encryptedPass = cipher.doFinal(cipherText);
 
     return this.convertBytesToChars(encryptedPass);
+  }
+
+  @Override
+  public String encrypt(String valueToEncrypt) throws Exception {
+    return this.encrypt(valueToEncrypt, encryptionKey);
   }
 
   @Override
