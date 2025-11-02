@@ -117,6 +117,13 @@
       <version>4.2.9</version>
     </dependency>
 
+    <!-- Documentation -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-ui</artifactId>
+      <version>1.8.0</version>
+    </dependency>
+
     <!-- Helpers -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -14,23 +14,43 @@ import com.chat.server.infrastructure.controller.mapper.UserDtoMapper;
 import com.chat.server.infrastructure.controller.request.UserRequest;
 import com.chat.server.infrastructure.controller.response.UserResponse;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(Constants.PUBLIC_CONTROLLER)
+@Tag(
+    name = "Public Controller",
+    description = "Controller to manage petitions that do not require authentication"
+)
 public class PublicController {
 
   private final UserService service;
   private final UserDtoMapper mapper;
   
+  @Tag(
+      name = "Create user",
+      description = """
+          Endpoint used to create external users.
+          Every parameter is manadatory.
+          Password must contain between 12 and 30 characters, including lowcase, highcase, numbers and special characters.
+      """
+  )
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "User created."),
+      @ApiResponse(responseCode = "400", description = "Mandatory parameter missing or invalid password."),
+      @ApiResponse(responseCode = "409", description = "Duplicated value.")
+})
   @PostMapping("/user")
   public ResponseEntity<UserResponse> createUser(
       @Valid UserRequest request
   ) {
     User user = mapper.toDomain(request);
-    user = UserFactory.generateInternalUser(user);
+    user = UserFactory.generateExternalUser(user);
     user = service.createUser(user);
     UserResponse response = mapper.toResponse(user);
     return ResponseEntity

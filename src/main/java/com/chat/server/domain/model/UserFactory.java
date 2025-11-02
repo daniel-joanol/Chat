@@ -20,14 +20,14 @@ public class UserFactory {
   }
 
   public static User generateInternalUser(User user) {
-    Role role = new Role().setName(UserRoleEnum.USER);
+    Role role = new Role().setName(UserRoleEnum.ADMIN);
     return setCommonValues(user)
         .setType(UserTypeEnum.INTERNAL)
         .setRole(role);
   }
 
   public static User generateExternalUser(User user) {
-    Role role = new Role().setName(UserRoleEnum.ADMIN);
+    Role role = new Role().setName(UserRoleEnum.USER);
     return setCommonValues(user)
         .setType(UserTypeEnum.EXTERNAL)
         .setRole(role);
