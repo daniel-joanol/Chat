@@ -2,7 +2,7 @@ package com.chat.server.domain.service;
 
 import com.chat.server.domain.model.User;
 
-public interface AccessManagementService {
+public interface UserService {
   
   String authenticate(String username, char[] password);
 

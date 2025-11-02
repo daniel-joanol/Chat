@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.chat.server.domain.dao.AccessManagementDao;
 import com.chat.server.domain.dao.UserDao;
 import com.chat.server.domain.model.User;
-import com.chat.server.domain.service.AccessManagementService;
+import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.service.PropertyService;
 import com.chat.server.infrastructure.exception.ConflictException;
 
@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class DefaultAccessManagementService implements AccessManagementService {
+public class DefaultUserService implements UserService {
   
   private final AccessManagementDao accessManagementDao;
   private final UserDao userDao;
