@@ -30,11 +30,5 @@ public class User {
   private Boolean isEnabled;
   private Boolean isCreationCompleted;
   private List<Contact> contacts;
-
-  public static User generateDefaultInternalUser(String username, char[] password) {
-    return new User()
-        .setUsername(username)
-        .setPassword(password);
-  }
   
 }

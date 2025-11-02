@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.chat.server.domain.constants.Constants;
 import com.chat.server.domain.dao.PropertyDao;
 import com.chat.server.domain.model.User;
+import com.chat.server.domain.model.UserFactory;
 import com.chat.server.domain.service.PropertyService;
 import com.chat.server.domain.util.EncryptUtil;
 import com.chat.server.infrastructure.exception.InternalException;
@@ -22,7 +23,7 @@ public class DefaultPropertyService implements PropertyService {
   public User getDefaultInternalUser() {
     String username = this.getDefaultInternalUsername();
     char[] pass = this.getDefaultInternalUserPass();
-    return User.generateDefaultInternalUser(username, pass);
+    return UserFactory.generateDefaultInternalUser(username, pass);
   }
 
   private String getDefaultInternalUsername() {
