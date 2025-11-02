@@ -6,7 +6,7 @@ import com.chat.server.domain.model.User;
 
 public interface AccessManagementDao {
   
-  String login(String username, char[] password);
+  String authenticate(String username, char[] password);
 
   void createUser(String jwt, User user);
 

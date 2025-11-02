@@ -17,6 +17,7 @@ import lombok.experimental.Accessors;
 public class User {
 
   private UUID id;
+  private UUID keycloakId;
   private String username;
   private String firstName;
   private String lastName;
@@ -27,6 +28,7 @@ public class User {
   private UserTypeEnum type;
   private Role role;
   private Boolean isEnabled;
+  private Boolean isCreationCompleted;
   private List<Contact> contacts;
   
 }

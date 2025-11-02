@@ -67,7 +67,7 @@ class AccessManagementHttpDaoTest {
     when(mockedResponse.ifFailure(any())).thenReturn(mockedResponse); 
     when(mockedResponse.getBody()).thenReturn(node);
 
-    sut.login(username, password);
+    sut.authenticate(username, password);
     verify(repository).login(anyString(), any());
   }
 
@@ -78,7 +78,7 @@ class AccessManagementHttpDaoTest {
     
     assertThrows(
         AuthenticationFailedException.class, 
-        () -> sut.login("username", new char[]{'p','a','s','s'})
+        () -> sut.authenticate("username", new char[]{'p','a','s','s'})
     );
   }
 

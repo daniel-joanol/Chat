@@ -6,8 +6,4 @@ public class InternalException extends AbstractException {
     super("Internal Error.", externalMessage);
   }
 
-  public InternalException(String externalMessage, Throwable throwable) {
-    super("Internal Error.", externalMessage, throwable);
-  }
-
 }
