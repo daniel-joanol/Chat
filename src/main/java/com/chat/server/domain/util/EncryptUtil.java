@@ -8,8 +8,8 @@ public interface EncryptUtil {
 
   String encrypt(String valueToEncrypt, String key) throws Exception;
 
-  char[] decrypt(char[] encryptedValue) throws Exception;
+  String decrypt(String encryptedValue) throws Exception;
 
-  char[] decrypt(char[] encryptedValue, String key) throws Exception;
+  String decrypt(String encryptedValue, String key) throws Exception;
 
 }

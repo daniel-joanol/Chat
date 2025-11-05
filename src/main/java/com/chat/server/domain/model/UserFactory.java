@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserFactory {
   
-  public static User generateDefaultInternalUser(String username, char[] password) {
+  public static User generateDefaultInternalUser(String username, String password) {
     return new User()
         .setUsername(username)
         .setPassword(password);

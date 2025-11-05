@@ -9,6 +9,6 @@ public class KeycloakPasswordRequest {
   
   private final String type = "password";
   private final boolean temporary = false;
-  private char[] value;
+  private String value;
   
 }

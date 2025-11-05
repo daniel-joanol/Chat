@@ -27,7 +27,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   private final AccessManagementHttpMapper mapper;
 
   @Override
-  public String authenticate(String username, char[] password) {
+  public String authenticate(String username, String password) {
     HttpResponse<JsonNode> response = repository.login(username, password)
         .ifFailure(res -> {
           String message = String.format(

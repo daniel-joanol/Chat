@@ -37,7 +37,7 @@ class AccessManagementHttpDaoTest {
       .randomizationDepth(2);
   private EasyRandom generator = new EasyRandom(parameters);
   private String username = "username";
-  private char[] password = new char[]{'p','a','s','s'};
+  private String password = "pass";
   private String jwt = "JWT";
   private JsonNode errorNode = new JsonNode("{\"message\": \"some error\"}");
   private UUID userId = UUID.randomUUID();
@@ -78,7 +78,7 @@ class AccessManagementHttpDaoTest {
     
     assertThrows(
         AuthenticationFailedException.class, 
-        () -> sut.authenticate("username", new char[]{'p','a','s','s'})
+        () -> sut.authenticate(username, password)
     );
   }
 

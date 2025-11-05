@@ -32,15 +32,16 @@ public class KeycloakHttpRepository {
   @Value("${spring.security.oauth2.client.registration.keycloak.client-secret}")
   private String clientSecret;
   
-  public HttpResponse<JsonNode> login(String username, char[] password) {
+  public HttpResponse<JsonNode> login(String username, String password) {
     String endpoint = String.format("%s/realms/%s/protocol/openid-connect/token", url, realm);
     return Unirest.post(endpoint)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         .field("username", username)
-        .field("password", new String(password))
+        .field("password", password)
         .field("client_id", clientName)
         .field("scope", "openid")
         .field("client_secret", clientSecret)
+        .field("grant_type", "password")
         .asJson();
   }
 

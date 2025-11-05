@@ -40,7 +40,6 @@ public class UserEntity {
   private String firstName;
   private String lastName;
   private String email;
-  private char[] password;
   private ZonedDateTime createdAt;
   private Boolean isEnabled;
   private Boolean isCreationCompleted;

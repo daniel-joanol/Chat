@@ -23,13 +23,4 @@ public class JpaPropertyDao implements PropertyDao {
         });
   }
 
-  @Override
-  public char[] getPasswordByName(String name) {
-    return repository.getPasswordByName(name)
-        .orElseThrow(() -> {
-          String message = String.format("Property not found: %s", name);
-          throw new InternalException(message);
-        });
-  }
-
 }

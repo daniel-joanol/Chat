@@ -22,7 +22,7 @@ public class DefaultPropertyService implements PropertyService {
   @Override
   public User getDefaultInternalUser() {
     String username = this.getDefaultInternalUsername();
-    char[] pass = this.getDefaultInternalUserPass();
+    String pass = this.getDefaultInternalUserPass();
     return UserFactory.generateDefaultInternalUser(username, pass);
   }
 
@@ -30,8 +30,8 @@ public class DefaultPropertyService implements PropertyService {
     return dao.getValueByName(Constants.PROPERTY_DEFAULT_KEYCLOAK_USER);
   }
 
-  private char[] getDefaultInternalUserPass() {
-    char[] encryptedPass = dao.getPasswordByName(Constants.PROPERTY_DEFAULT_KEYCLOAk_USER_PASS);
+  private String getDefaultInternalUserPass() {
+    String encryptedPass = dao.getValueByName(Constants.PROPERTY_DEFAULT_KEYCLOAk_USER_PASS);
     try {
       return encryptUtil.decrypt(encryptedPass);
     

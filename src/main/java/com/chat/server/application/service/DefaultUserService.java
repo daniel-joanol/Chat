@@ -23,7 +23,7 @@ public class DefaultUserService implements UserService {
   private final PropertyService propertyService;
 
   @Override
-  public String authenticate(String username, char[] password) {
+  public String authenticate(String username, String password) {
     userDao.getByUsername(username);
     return accessManagementDao.authenticate(username, password);
   }
@@ -61,7 +61,7 @@ public class DefaultUserService implements UserService {
 
   private String authenticateInternalUser() {
     User defaultInternalUser = propertyService.getDefaultInternalUser();
-    return this.authenticate(defaultInternalUser.getUsername(), defaultInternalUser.getPassword());
+    return accessManagementDao.authenticate(defaultInternalUser.getUsername(), defaultInternalUser.getPassword());
   }
 
   private void validateEmail(String email) {

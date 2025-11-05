@@ -1,6 +1,9 @@
 package com.chat.server.application.util;
 
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -13,11 +16,6 @@ import org.springframework.stereotype.Component;
 
 import com.chat.server.domain.util.EncryptUtil;
 
-import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.Arrays;
-
-// AES algorithm with CBC variation
 @Component
 public class AESEncryptUtil implements EncryptUtil {
 
@@ -39,13 +37,34 @@ public class AESEncryptUtil implements EncryptUtil {
   }
 
   @Override
-  public char[] decrypt(char[] encryptedValue) throws Exception {
+  public String encrypt(String valueToEncrypt) throws Exception {
+    return this.encrypt(valueToEncrypt, encryptionKey);
+  }
+
+  @Override
+  public String encrypt(String valueToEncrypt, String key) throws Exception {
+    IvParameterSpec iv = generateInitializationVector();
+    Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+    SecretKey secretKey = new SecretKeySpec(Base64.getDecoder().decode(key), ALGORITHM);
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+
+    byte[] cipherText = cipher.doFinal(valueToEncrypt.getBytes());
+    byte[] combined = new byte[iv.getIV().length + cipherText.length];
+
+    System.arraycopy(iv.getIV(), 0, combined, 0, iv.getIV().length);
+    System.arraycopy(cipherText, 0, combined, iv.getIV().length, cipherText.length);
+
+    return Base64.getEncoder().encodeToString(combined);
+  }
+
+  @Override
+  public String decrypt(String encryptedValue) throws Exception {
     return this.decrypt(encryptedValue, encryptionKey);
   }
 
   @Override
-  public char[] decrypt(char[] encryptedValue, String key) throws Exception {
-    byte[] combined = this.base64DecodeCharArray(encryptedValue);
+  public String decrypt(String encryptedValue, String key) throws Exception {
+    byte[] combined = Base64.getDecoder().decode(encryptedValue);
     byte[] ivBytes = Arrays.copyOfRange(combined, 0, 16);
     byte[] cipherText = Arrays.copyOfRange(combined, 16, combined.length);
 
@@ -53,55 +72,14 @@ public class AESEncryptUtil implements EncryptUtil {
     Cipher cipher = Cipher.getInstance(TRANSFORMATION);
     SecretKey secretKey = new SecretKeySpec(Base64.getDecoder().decode(key), ALGORITHM);
     cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-    byte[] encryptedPass = cipher.doFinal(cipherText);
 
-    return this.convertBytesToChars(encryptedPass);
+    byte[] decryptedBytes = cipher.doFinal(cipherText);
+    return new String(decryptedBytes);
   }
 
-  @Override
-  public String encrypt(String valueToEncrypt) throws Exception {
-    return this.encrypt(valueToEncrypt, encryptionKey);
-  }
-
-  @Override
-  public String encrypt(String valueToEncrypt, String key) throws Exception {
-    IvParameterSpec iv = this.generateInitialiationVector();
-    Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-    SecretKey secretKey = new SecretKeySpec(Base64.getDecoder().decode(key), ALGORITHM);
-    cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
-    byte[] cipherText = cipher.doFinal(valueToEncrypt.getBytes());
-
-    byte[] combined = new byte[iv.getIV().length + cipherText.length];
-    System.arraycopy(iv.getIV(), 0, combined, 0, iv.getIV().length);
-    System.arraycopy(cipherText, 0, combined, iv.getIV().length, cipherText.length);
-
-    return Base64.getEncoder().encodeToString(combined);
-  }
-
-  private IvParameterSpec generateInitialiationVector() {
+  private IvParameterSpec generateInitializationVector() {
     byte[] iv = new byte[16];
     new SecureRandom().nextBytes(iv);
     return new IvParameterSpec(iv);
   }
-
-  private byte[] base64DecodeCharArray(char[] input) {
-    return Base64.getDecoder().decode(this.charArrayToByteArray(input));
-  }
-
-  private byte[] charArrayToByteArray(char[] input) {
-    byte[] bytes = new byte[input.length];
-    for (int i = 0; i < input.length; i++) {
-      bytes[i] = (byte) input[i];
-    }
-    return bytes;
-  }
-
-  private char[] convertBytesToChars(byte[] bytes) {
-    char[] chars = new char[bytes.length];
-    for (int i = 0; i < bytes.length; i++) {
-      chars[i] = (char) (bytes[i] & 0xFF); //Important, use & 0xFF to avoid negative values.
-    }
-    return chars;
-  }
-  
 }

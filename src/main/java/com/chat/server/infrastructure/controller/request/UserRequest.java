@@ -7,5 +7,5 @@ public record UserRequest(
     @NotBlank String firstName,
     @NotBlank String lastName,
     @NotBlank String email,
-    char[] password
+    @NotBlank String password
 ) {}

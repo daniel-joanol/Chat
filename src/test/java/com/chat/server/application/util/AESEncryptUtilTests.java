@@ -19,7 +19,7 @@ class AESEncryptUtilTests {
     String value = "VA576&/(&/%khk _c)";
     String key = sut.generateKey();
     String encryptedValue = sut.encrypt(value, key);
-    char[] decryptedValue = sut.decrypt(encryptedValue.toCharArray(), key);
-    assertEquals(value, new String(decryptedValue));
+    String decryptedValue = sut.decrypt(encryptedValue, key);
+    assertEquals(value, decryptedValue);
   }
 }

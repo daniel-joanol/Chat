@@ -22,7 +22,7 @@ public class User {
   private String firstName;
   private String lastName;
   private String email;
-  private char[] password;
+  private String password;
   private ZonedDateTime createdAt;
   private UserStatusEnum status;
   private UserTypeEnum type;
