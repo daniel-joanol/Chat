@@ -48,6 +48,7 @@ public class KeycloakHttpRepository {
   public HttpResponse<JsonNode> createUser(String jwt, KeycloakUserRequest request) {
     String endpoint = String.format("%s/admin/realms/%s/users", url, realm);
     return Unirest.post(endpoint)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .body(request)
         .asJson();
@@ -64,6 +65,7 @@ public class KeycloakHttpRepository {
     );
     return Unirest.get(endpoint)
         .routeParam(queryParameters)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .asJson();
   }
@@ -71,6 +73,7 @@ public class KeycloakHttpRepository {
   public HttpResponse<JsonNode> updatePassword(String jwt, KeycloakPasswordRequest request, UUID userId) {
     String endpoint = String.format("%s/admin/realms/%s/users/%s/reset-password", url, realm, userId);
     return Unirest.put(endpoint)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .body(request)
         .asJson();
@@ -79,6 +82,7 @@ public class KeycloakHttpRepository {
   public HttpResponse<JsonNode> addRoleToUser(String jwt, KeycloakRoleRequest request, UUID userId) {
     String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, request.getContainerId());
     return Unirest.post(endpoint)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .body(request)
         .asJson();
