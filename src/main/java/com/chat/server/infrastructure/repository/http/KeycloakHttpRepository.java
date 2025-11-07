@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.repository.http;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -64,7 +65,7 @@ public class KeycloakHttpRepository {
         "search", filter.getSearch()
     );
     return Unirest.get(endpoint)
-        .routeParam(queryParameters)
+        .queryString(queryParameters)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .asJson();
@@ -79,12 +80,12 @@ public class KeycloakHttpRepository {
         .asJson();
   }
 
-  public HttpResponse<JsonNode> addRoleToUser(String jwt, KeycloakRoleRequest request, UUID userId) {
-    String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, request.getContainerId());
+  public HttpResponse<JsonNode> addRoleToUser(String jwt, List<KeycloakRoleRequest> requests, UUID userId) {
+    String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, requests.get(0).getContainerId());
     return Unirest.post(endpoint)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-        .body(request)
+        .body(requests)
         .asJson();
   }
 

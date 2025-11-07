@@ -7,9 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.chat.server.domain.dao.AccessManagementDao;
 import com.chat.server.domain.dao.UserDao;
+import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.service.PropertyService;
+import com.chat.server.domain.service.RoleService;
 import com.chat.server.infrastructure.exception.ConflictException;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class DefaultUserService implements UserService {
   private final AccessManagementDao accessManagementDao;
   private final UserDao userDao;
   private final PropertyService propertyService;
+  private final RoleService roleService;
 
   @Override
   public String authenticate(String username, String password) {
@@ -49,14 +52,21 @@ public class DefaultUserService implements UserService {
     this.validateEmail(user.getEmail());
     this.validateUsername(user.getUsername());
     String jwt = this.authenticateInternalUser();
+    String password = user.getPassword();
+    Role role = roleService.getByName(user.getRole().getName());
+    user.setRole(role);
     accessManagementDao.createUser(jwt, user);
-    user = userDao.save(user);
+    user = userDao.save(user).setRole(role);
     UUID keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
         .getKeycloakId();
     user.setKeycloakId(keycloakId);
+    user = userDao.save(user).setRole(role)
+      .setRole(role)
+      .setPassword(password);
     accessManagementDao.addRole(jwt, user);
     accessManagementDao.updatePassword(jwt, user);
-    return user.setIsCreationCompleted(true);
+    user.setIsCreationCompleted(true);
+    return userDao.save(user).setRole(role);
   }
 
   private String authenticateInternalUser() {

@@ -17,7 +17,7 @@ public class ErrorResponseFactory {
       return new ErrorResponse(traceId, absE.getExternalMessage());
     
     } else {
-      return new ErrorResponse(traceId, e.getMessage());
+      return new ErrorResponse(traceId, "Internal Error");
     }
   }
 
