@@ -3,7 +3,6 @@ package com.chat.server.application.service;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.chat.server.domain.dao.AccessManagementDao;
 import com.chat.server.domain.dao.UserDao;
@@ -32,7 +31,6 @@ public class DefaultUserService implements UserService {
   }
 
   @Override
-  @Transactional
   public void deleteUser(String username) {
     User user = userDao.getByUsername(username);
     String jwt = this.authenticateInternalUser();

@@ -1,4 +1,4 @@
-package com.chat.server.infrastructure.dao;
+package com.chat.server.infrastructure.dao.http;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;

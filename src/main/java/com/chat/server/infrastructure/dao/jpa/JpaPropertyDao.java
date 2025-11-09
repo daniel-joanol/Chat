@@ -18,8 +18,8 @@ public class JpaPropertyDao implements PropertyDao {
   public String getValueByName(String name) {
     return repository.getValueByName(name)
         .orElseThrow(() -> {
-          String message = String.format("Property not found: %s", name);
-          throw new InternalException(message);
+          String internalMessage = String.format("Property not found: %s", name);
+          throw new InternalException(internalMessage);
         });
   }
 
