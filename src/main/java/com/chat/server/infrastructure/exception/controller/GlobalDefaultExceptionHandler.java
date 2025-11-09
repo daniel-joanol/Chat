@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -26,14 +27,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GlobalDefaultExceptionHandler {
 
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpServletRequest req) {
+    ErrorResponse response = this.generateResponse(e);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+  }
+
   @ExceptionHandler(AuthenticationFailedException.class)
-  public ResponseEntity<ErrorResponse> handleAuthenticationFailedException(AuthenticationFailedException e, HttpServletRequest req) {
+  public ResponseEntity<ErrorResponse> handleAuthenticationFailed(AuthenticationFailedException e, HttpServletRequest req) {
     ErrorResponse response = this.generateResponse(e);
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
   }
 
   @ExceptionHandler(EntityNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e, HttpServletRequest req) {
+  public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException e, HttpServletRequest req) {
     ErrorResponse response = this.generateResponse(e);
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
   }

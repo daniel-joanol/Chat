@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.controller.mapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.mapstruct.Mapper;
@@ -35,7 +36,9 @@ public interface UserDtoMapper {
 
   @Named("contactsToResponse")
   default List<ContactResponse> contactsToResponse(List<Contact> contacts) {
-    return contactMapper.toResponse(contacts);
+    return contacts == null
+        ? new ArrayList<>()
+        : contactMapper.toResponse(contacts);
   }
 
 }
