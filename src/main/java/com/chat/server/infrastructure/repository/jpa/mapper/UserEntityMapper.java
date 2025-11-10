@@ -29,10 +29,12 @@ public interface UserEntityMapper {
     return roleMapper.toEntity(role);
   }
 
+  @Mapping(target = "password", ignore = true)
   @Mapping(target = "contacts", source = "contacts", qualifiedByName = "contactsToDomain")
   @Mapping(target = "role", source = "role", qualifiedByName = "roleToDomain")
   User toDomain(UserEntity entity);
 
+  @Mapping(target = "password", ignore = true)
   @Mapping(target = "contacts", ignore = true)
   @Mapping(target = "role", source = "role", qualifiedByName = "roleToDomain")
   User toDomainWithoutContacts(UserEntity entity);

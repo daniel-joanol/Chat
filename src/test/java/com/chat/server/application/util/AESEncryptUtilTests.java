@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AESEncryptUtilTests {
   
-  private AESEncryptUtil sut = new AESEncryptUtil();
+  private AESEncryptUtil sut = new AESEncryptUtil("KEY");
 
   @Test
   @DisplayName("Should generate a key, encrypt a value than decrypt it. " 
@@ -19,7 +19,7 @@ class AESEncryptUtilTests {
     String value = "VA576&/(&/%khk _c)";
     String key = sut.generateKey();
     String encryptedValue = sut.encrypt(value, key);
-    char[] decryptedValue = sut.decrypt(encryptedValue.toCharArray(), key);
-    assertEquals(value, new String(decryptedValue));
+    String decryptedValue = sut.decrypt(encryptedValue, key);
+    assertEquals(value, decryptedValue);
   }
 }

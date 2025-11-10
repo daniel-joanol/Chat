@@ -1,17 +1,15 @@
 package com.chat.server.domain.service;
 
-import java.util.UUID;
-
 import com.chat.server.domain.model.User;
 
 public interface UserService {
   
-  User save(User user);
+  String authenticate(String username, String password);
 
-  User getByUsername(String username);
+  User createUser(User user);
 
-  User getById(UUID id);
+  void updatePassword(User user);
 
-  boolean existsByUsername(String username);
-
+  void deleteUser(String username);
+  
 }

@@ -34,9 +34,7 @@ CREATE TABLE IF NOT EXISTS property(
 -- INSERT PROPERTIES
 INSERT INTO property(name, value) VALUES 
   ('DEFAULT_KEYCLOAK_USER', 'default_internal_user'),
-  ('DEFAULT_KEYCLOAK_USER_ID', 'UPDATE USER ID'),
-  ('DEFAULT_KEYCLOAk_USER_PASS', 'UPDATE PASSWORD ON IMPLANTATION'),
-  ('DEFAULT_KEYCLOAK_CLIENT_ID', 'UPDATE CLIENT ID')
+  ('DEFAULT_KEYCLOAk_USER_PASS', 'UPDATE PASSWORD ON IMPLANTATION')
   ON CONFLICT DO NOTHING;
 
 -- ADD COLUMNS TO USER
@@ -87,7 +85,29 @@ BEGIN
         AND table_name = '_user'
         AND column_name = 'is_active'
   ) THEN
-    ALTER TABLE _user RENAME COLUMN  is_active TO is_enabled;
+    ALTER TABLE _user RENAME COLUMN is_active TO is_enabled;
+  END IF;
+
+  -- ADD IS_CREATION_COMPLETED
+  IF NOT EXISTS (
+    SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'chat'
+        AND table_name = '_user'
+        AND column_name = 'is_creation_completed'
+  ) THEN
+    ALTER TABLE _user ADD COLUMN is_creation_completed BOOLEAN DEFAULT TRUE;
+  END IF;
+
+  -- ADD KEYCLOAK_ID
+  IF NOT EXISTS (
+    SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'chat'
+        AND table_name = '_user'
+        AND column_name = 'keycloak_id'
+  ) THEN
+    ALTER TABLE _user ADD COLUMN keycloak_id UUID;
   END IF;
 
 END $$;

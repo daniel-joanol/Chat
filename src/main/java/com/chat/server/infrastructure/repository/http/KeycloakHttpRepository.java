@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.repository.http;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,26 +28,28 @@ public class KeycloakHttpRepository {
   private String realm;
 
   @Value("${spring.security.oauth2.client.registration.keycloak.client-id}")
-  private String client;
+  private String clientName;
 
   @Value("${spring.security.oauth2.client.registration.keycloak.client-secret}")
   private String clientSecret;
   
-  public HttpResponse<JsonNode> login(String username, char[] password) {
+  public HttpResponse<JsonNode> login(String username, String password) {
     String endpoint = String.format("%s/realms/%s/protocol/openid-connect/token", url, realm);
     return Unirest.post(endpoint)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         .field("username", username)
-        .field("password", new String(password))
-        .field("client_id", client)
+        .field("password", password)
+        .field("client_id", clientName)
         .field("scope", "openid")
         .field("client_secret", clientSecret)
+        .field("grant_type", "password")
         .asJson();
   }
 
   public HttpResponse<JsonNode> createUser(String jwt, KeycloakUserRequest request) {
     String endpoint = String.format("%s/admin/realms/%s/users", url, realm);
     return Unirest.post(endpoint)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .body(request)
         .asJson();
@@ -62,7 +65,8 @@ public class KeycloakHttpRepository {
         "search", filter.getSearch()
     );
     return Unirest.get(endpoint)
-        .routeParam(queryParameters)
+        .queryString(queryParameters)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .asJson();
   }
@@ -70,16 +74,18 @@ public class KeycloakHttpRepository {
   public HttpResponse<JsonNode> updatePassword(String jwt, KeycloakPasswordRequest request, UUID userId) {
     String endpoint = String.format("%s/admin/realms/%s/users/%s/reset-password", url, realm, userId);
     return Unirest.put(endpoint)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .body(request)
         .asJson();
   }
 
-  public HttpResponse<JsonNode> addRoleToUser(String jwt, KeycloakRoleRequest request, UUID userId) {
-    String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, request.getContainerId());
+  public HttpResponse<JsonNode> addRoleToUser(String jwt, List<KeycloakRoleRequest> requests, UUID userId) {
+    String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, requests.get(0).getContainerId());
     return Unirest.post(endpoint)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-        .body(request)
+        .body(requests)
         .asJson();
   }
 
@@ -89,7 +95,5 @@ public class KeycloakHttpRepository {
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .asJson();
   }
-
-  // TODO: add unirest exceptions to controller advice
 
 }

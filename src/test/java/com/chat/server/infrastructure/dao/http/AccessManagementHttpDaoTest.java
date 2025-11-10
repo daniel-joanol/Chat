@@ -1,4 +1,4 @@
-package com.chat.server.infrastructure.dao;
+package com.chat.server.infrastructure.dao.http;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.chat.server.domain.model.User;
-import com.chat.server.infrastructure.dao.http.AccessManagementHttpDao;
 import com.chat.server.infrastructure.dao.http.mapper.AccessManagementHttpMapper;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.InternalException;
@@ -37,7 +36,7 @@ class AccessManagementHttpDaoTest {
       .randomizationDepth(2);
   private EasyRandom generator = new EasyRandom(parameters);
   private String username = "username";
-  private char[] password = new char[]{'p','a','s','s'};
+  private String password = "pass";
   private String jwt = "JWT";
   private JsonNode errorNode = new JsonNode("{\"message\": \"some error\"}");
   private UUID userId = UUID.randomUUID();
@@ -67,7 +66,7 @@ class AccessManagementHttpDaoTest {
     when(mockedResponse.ifFailure(any())).thenReturn(mockedResponse); 
     when(mockedResponse.getBody()).thenReturn(node);
 
-    sut.login(username, password);
+    sut.authenticate(username, password);
     verify(repository).login(anyString(), any());
   }
 
@@ -78,7 +77,7 @@ class AccessManagementHttpDaoTest {
     
     assertThrows(
         AuthenticationFailedException.class, 
-        () -> sut.login("username", new char[]{'p','a','s','s'})
+        () -> sut.authenticate(username, password)
     );
   }
 

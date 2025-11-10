@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.dao.http;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   private final AccessManagementHttpMapper mapper;
 
   @Override
-  public String login(String username, char[] password) {
+  public String authenticate(String username, String password) {
     HttpResponse<JsonNode> response = repository.login(username, password)
         .ifFailure(res -> {
           String message = String.format(
@@ -82,11 +83,11 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   @Override
   public void addRole(String jwt, User user) {
     KeycloakRoleRequest roleRequest = mapper.toRoleRequest(user.getRole());
-    repository.addRoleToUser(jwt, roleRequest, user.getId())
+    repository.addRoleToUser(jwt, List.of(roleRequest), user.getKeycloakId())
         .ifFailure(res -> {
           String message = String.format(
-              "Error adding role %s to %s on Keycloak. Petition response: %d, {%s}",
-              user.getRole().getName(), user.getId(), res.getStatus(), res.getBody()
+              "Error adding role %s to user id %s on Keycloak. Petition response: %d, {%s}",
+              user.getRole().getName(), user.getKeycloakId(), res.getStatus(), res.getBody()
           );
           throw new InternalException(message);
         });
@@ -95,7 +96,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   @Override
   public void updatePassword(String jwt, User user) {
     KeycloakPasswordRequest passwordRequest = new KeycloakPasswordRequest(user.getPassword());
-    repository.updatePassword(jwt, passwordRequest, user.getId())
+    repository.updatePassword(jwt, passwordRequest, user.getKeycloakId())
         .ifFailure(res -> {
           String message = String.format(
               "Error updating password for user %s on Keycloak. Petition response: %d, {%s}",

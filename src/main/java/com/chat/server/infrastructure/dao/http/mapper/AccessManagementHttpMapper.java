@@ -33,7 +33,7 @@ public interface AccessManagementHttpMapper {
 
   default User toUser(JSONObject json) {
     return new User()
-        .setId(UUID.fromString(json.getString("id")))
+        .setKeycloakId(UUID.fromString(json.getString("id")))
         .setUsername(json.getString("username"))
         .setFirstName(json.getString("firstName"))
         .setLastName(json.has("lastName") ? json.getString("lastName") : "")
