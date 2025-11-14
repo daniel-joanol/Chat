@@ -37,6 +37,4 @@ public class ContactEntity {
 
   private ZonedDateTime createdAt;
 
-  private Boolean isActive;
-
 }

@@ -18,14 +18,12 @@ public class Contact {
   private User user;
   private User friend;
   private ZonedDateTime createdAt;
-  private Boolean isActive;
 
-  public static Contact fromCreationRequest(String username, String friendUsername) {
+  public static Contact fromCreationRequest(User user, User friend) {
     return new Contact()
-        .setUser(new User().setUsername(username))
-        .setFriend(new User().setUsername(friendUsername))
-        .setCreatedAt(TimeUtil.now())
-        .setIsActive(true);
-  }
+        .setUser(user)
+        .setFriend(friend)
+        .setCreatedAt(TimeUtil.now());
+    }
 
 }

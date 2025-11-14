@@ -25,6 +25,11 @@ public class DefaultUserService implements UserService {
   private final RoleService roleService;
 
   @Override
+  public User getByUsername(String username) {
+    return userDao.getByUsername(username);
+  }
+
+  @Override
   public String authenticate(String username, String password) {
     userDao.getByUsername(username);
     return accessManagementDao.authenticate(username, password);

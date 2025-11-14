@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.chat.server.domain.dao.ContactDao;
 import com.chat.server.domain.model.Contact;
 import com.chat.server.domain.service.ContactService;
+import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.ForbiddenException;
@@ -17,8 +18,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DefaultContactService implements ContactService {
   
-  private ContactDao dao;
-  private SecurityUtil secUtil;
+  private final ContactDao dao;
+  private final SecurityUtil secUtil;
+  private final UserService userService;
   
   @Override
   public Contact addContact(String contactUsername) {
@@ -28,7 +30,9 @@ public class DefaultContactService implements ContactService {
       throw new ConflictException(message);
     }
 
-    var contact = Contact.fromCreationRequest(username, contactUsername);
+    var user = userService.getByUsername(username);
+    var friend = userService.getByUsername(contactUsername);
+    var contact = Contact.fromCreationRequest(user, friend);
     return dao.save(contact);
   }
 
