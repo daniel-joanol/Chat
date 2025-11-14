@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(Constants.USER_CONTROLLER)
-public class UserController {
+@RequestMapping(Constants.CONTACT_CONTROLLER)
+public class ContactController {
   
 }
