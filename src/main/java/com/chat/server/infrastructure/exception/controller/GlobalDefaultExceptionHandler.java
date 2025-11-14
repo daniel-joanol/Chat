@@ -12,6 +12,7 @@ import com.chat.server.infrastructure.exception.AbstractException;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.ForbiddenException;
 import com.chat.server.infrastructure.exception.InternalException;
 import com.chat.server.infrastructure.exception.response.ErrorResponse;
 import com.chat.server.infrastructure.exception.response.ErrorResponseFactory;
@@ -37,6 +38,12 @@ public class GlobalDefaultExceptionHandler {
   public ResponseEntity<ErrorResponse> handleAuthenticationFailed(AuthenticationFailedException e, HttpServletRequest req) {
     ErrorResponse response = this.generateResponse(e);
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException e, HttpServletRequest req) {
+    var response = this.generateResponse(e);
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
   }
 
   @ExceptionHandler(EntityNotFoundException.class)
