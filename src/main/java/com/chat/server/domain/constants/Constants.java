@@ -13,5 +13,11 @@ public class Constants {
 
   public static final String PROPERTY_DEFAULT_KEYCLOAK_USER = "DEFAULT_KEYCLOAK_USER";
   public static final String PROPERTY_DEFAULT_KEYCLOAk_USER_PASS = "DEFAULT_KEYCLOAk_USER_PASS";
+
+  public static final String ROLE_ADMIN = "ADMIN";
+  public static final String ROLE_USER = "USER";
+
+  public static final String HAS_ROLE_ADMIN = "hasRole('" + ROLE_ADMIN + "')";
+  public static final String HAS_ROLE_USER = "hasRole('" + ROLE_USER + "')";
   
 }

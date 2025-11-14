@@ -20,9 +20,9 @@ public class Contact {
   private ZonedDateTime createdAt;
   private Boolean isActive;
 
-  public static Contact fromCreationRequest(UUID userId, String friendUsername) {
+  public static Contact fromCreationRequest(String username, String friendUsername) {
     return new Contact()
-        .setUser(new User().setId(userId))
+        .setUser(new User().setUsername(username))
         .setFriend(new User().setUsername(friendUsername))
         .setCreatedAt(TimeUtil.now())
         .setIsActive(true);
