@@ -48,7 +48,7 @@ public class ContactController {
   )
   @ApiResponses({
       @ApiResponse(responseCode = "201", description = "Created"),
-      @ApiResponse(responseCode = "400", description = "Username blank"),
+      @ApiResponse(responseCode = "400", description = "Bad request"),
       @ApiResponse(responseCode = "404", description = "Username not found"),
       @ApiResponse(responseCode = "409", description = "Contact duplicated")
   })
