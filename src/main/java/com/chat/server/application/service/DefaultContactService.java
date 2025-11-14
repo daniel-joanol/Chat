@@ -27,7 +27,7 @@ public class DefaultContactService implements ContactService {
   public Contact addContact(String contactUsername) {
     var username = secUtil.getUsername();
     if (contactUsername.equals(username)) {
-      var message = String.format("User trying to add itself %s", username);
+      var message = String.format("User %s trying to add itself", username);
       throw new BadRequestException(message);
     }
 
@@ -46,7 +46,7 @@ public class DefaultContactService implements ContactService {
   public void delete(UUID id) {
     var username = secUtil.getUsername();
     var contact = dao.getById(id);
-    boolean contactBelongsToAnotherUser = contact.getUser().getUsername().equals(username);
+    boolean contactBelongsToAnotherUser = !contact.getUser().getUsername().equals(username);
     if (contactBelongsToAnotherUser) {
       var message = String.format("Contact %s does not belong to user %s", id, username);
       throw new ForbiddenException(message);
