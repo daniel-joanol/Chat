@@ -6,23 +6,26 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import com.chat.server.domain.util.SecurityUtil;
+import com.chat.server.infrastructure.exception.InternalException;
 
 @Component
 public class JWTSecurityUtil implements SecurityUtil {
 
   @Override
   public String getUsername() {
-    String username = null;
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-      username = jwt.getClaimAsString("preferred_username");
+    Jwt jwt = this.getJWT();
+    return jwt.hasClaim("preferred_username")
+        ? jwt.getClaimAsString("preferred_username")
+        : jwt.getClaimAsString("username");
+  }
 
-      if (username == null) {
-        username = jwt.getClaimAsString("username");
-      }
-    }
-
-    return username;
+  private Jwt getJWT() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    boolean noAuthFound = authentication == null 
+        || !authentication.isAuthenticated()
+        || !authentication.getPrincipal().getClass().isAssignableFrom(Jwt.class);
+    if (noAuthFound) throw new InternalException("Could not get logged user");
+    return (Jwt) authentication.getPrincipal();
   }
 
 }
