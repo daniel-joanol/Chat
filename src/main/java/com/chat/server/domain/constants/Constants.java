@@ -14,6 +14,8 @@ public class Constants {
   public static final String PROPERTY_DEFAULT_KEYCLOAK_USER = "DEFAULT_KEYCLOAK_USER";
   public static final String PROPERTY_DEFAULT_KEYCLOAk_USER_PASS = "DEFAULT_KEYCLOAk_USER_PASS";
 
+  public static final String KEYCLOAK_CLIENT = "chat";
+
   public static final String ROLE_ADMIN = "ADMIN";
   public static final String ROLE_USER = "USER";
 
