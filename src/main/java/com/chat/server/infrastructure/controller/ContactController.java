@@ -49,8 +49,8 @@ public class ContactController {
   @ApiResponses({
       @ApiResponse(responseCode = "201", description = "Created"),
       @ApiResponse(responseCode = "400", description = "Bad request", ref = "GenericError"),
-      @ApiResponse(responseCode = "404", description = "Username not found"),
-      @ApiResponse(responseCode = "409", description = "Contact duplicated")
+      @ApiResponse(responseCode = "404", description = "Username not found", ref = "GenericError"),
+      @ApiResponse(responseCode = "409", description = "Contact duplicated", ref = "GenericError")
   })
   @PostMapping
   public ResponseEntity<ContactResponse> add(

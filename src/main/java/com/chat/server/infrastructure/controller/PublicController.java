@@ -47,9 +47,9 @@ public class PublicController {
           """
   )
   @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "Login successful."),
-      @ApiResponse(responseCode = "400", description = "Mandatory parameter missing."),
-      @ApiResponse(responseCode = "401", description = "Unauthorized.")
+      @ApiResponse(responseCode = "200", description = "Login successful"),
+      @ApiResponse(responseCode = "400", description = "Mandatory parameter missing", ref = "GenericError"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized", ref = "GenericError")
   })
   @PostMapping("/login")
   public ResponseEntity<String> login(
@@ -76,9 +76,9 @@ public class PublicController {
       """
   )
   @ApiResponses({
-      @ApiResponse(responseCode = "201", description = "User created."),
-      @ApiResponse(responseCode = "400", description = "Mandatory parameter missing or invalid password."),
-      @ApiResponse(responseCode = "409", description = "Duplicated value.")
+      @ApiResponse(responseCode = "201", description = "User created"),
+      @ApiResponse(responseCode = "400", description = "Mandatory parameter missing or invalid password", ref = "GenericError"),
+      @ApiResponse(responseCode = "409", description = "Duplicated value", ref = "GenericError")
   })
   @PostMapping("/user")
   public ResponseEntity<UserResponse> createUser(
