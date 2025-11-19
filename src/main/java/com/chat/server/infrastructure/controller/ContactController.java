@@ -48,7 +48,7 @@ public class ContactController {
   )
   @ApiResponses({
       @ApiResponse(responseCode = "201", description = "Created"),
-      @ApiResponse(responseCode = "400", description = "Bad request"),
+      @ApiResponse(responseCode = "400", description = "Bad request", ref = "GenericError"),
       @ApiResponse(responseCode = "404", description = "Username not found"),
       @ApiResponse(responseCode = "409", description = "Contact duplicated")
   })
@@ -69,7 +69,7 @@ public class ContactController {
   )
   @ApiResponses({
       @ApiResponse(responseCode = "204", description = "Contact removed"),
-      @ApiResponse(responseCode = "403", description = "Contact does not belong to user")
+      @ApiResponse(responseCode = "403", description = "Contact does not belong to user", ref = "GenericError")
   })
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(
