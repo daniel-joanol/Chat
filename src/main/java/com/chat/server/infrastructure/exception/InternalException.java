@@ -1,9 +1,11 @@
 package com.chat.server.infrastructure.exception;
 
-public class InternalException extends AbstractException {
+public final class InternalException extends AbstractException {
   
-  public InternalException(String externalMessage) {
-    super("Internal Error.", externalMessage);
+  private static final String EXTERNAL_MESSAGE = "Internal Error.";
+
+  public InternalException(String internalMessage) {
+    super(EXTERNAL_MESSAGE, internalMessage);
   }
 
 }
