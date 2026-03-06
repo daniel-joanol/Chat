@@ -22,7 +22,6 @@ import com.chat.server.infrastructure.exception.EntityNotFoundException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,11 +45,9 @@ public class PublicController {
           Every parameter is mandatory.
           """
   )
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "Login successful"),
-      @ApiResponse(responseCode = "400", description = "Mandatory parameter missing", ref = "GenericError"),
-      @ApiResponse(responseCode = "401", description = "Unauthorized", ref = "GenericError")
-  })
+  @ApiResponse(responseCode = "200", description = "Login successful")
+  @ApiResponse(responseCode = "400", description = "Mandatory parameter missing", ref = "GenericError")
+  @ApiResponse(responseCode = "401", description = "Unauthorized", ref = "GenericError")
   @PostMapping("/login")
   public ResponseEntity<String> login(
       @Valid @RequestBody LoginRequest request
@@ -75,11 +72,9 @@ public class PublicController {
           Password must contain between 12 and 30 characters, including lowcase, highcase, numbers and special characters.
       """
   )
-  @ApiResponses({
-      @ApiResponse(responseCode = "201", description = "User created"),
-      @ApiResponse(responseCode = "400", description = "Mandatory parameter missing or invalid password", ref = "GenericError"),
-      @ApiResponse(responseCode = "409", description = "Duplicated value", ref = "GenericError")
-  })
+  @ApiResponse(responseCode = "201", description = "User created")
+  @ApiResponse(responseCode = "400", description = "Mandatory parameter missing or invalid password", ref = "GenericError")
+  @ApiResponse(responseCode = "409", description = "Duplicated value", ref = "GenericError")
   @PostMapping("/user")
   public ResponseEntity<UserResponse> createUser(
       @Valid @RequestBody UserRequest request

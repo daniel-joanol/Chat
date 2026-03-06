@@ -20,7 +20,6 @@ import com.chat.server.infrastructure.controller.response.ContactResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,12 +45,11 @@ public class ContactController {
       summary = "Add contact",
       description = "Endpoint to add contact to user."
   )
-  @ApiResponses({
-      @ApiResponse(responseCode = "201", description = "Created"),
-      @ApiResponse(responseCode = "400", description = "Bad request", ref = "GenericError"),
-      @ApiResponse(responseCode = "404", description = "Username not found", ref = "GenericError"),
-      @ApiResponse(responseCode = "409", description = "Contact duplicated", ref = "GenericError")
-  })
+  
+  @ApiResponse(responseCode = "201", description = "Created")
+  @ApiResponse(responseCode = "400", description = "Bad request", ref = "GenericError")
+  @ApiResponse(responseCode = "404", description = "Username not found", ref = "GenericError")
+  @ApiResponse(responseCode = "409", description = "Contact duplicated", ref = "GenericError")
   @PostMapping
   public ResponseEntity<ContactResponse> add(
       @RequestBody @Valid ContactRequest request
@@ -67,10 +65,8 @@ public class ContactController {
       summary = "Delete contact",
       description = "Endpoint to delete contact."
   )
-  @ApiResponses({
-      @ApiResponse(responseCode = "204", description = "Contact removed"),
-      @ApiResponse(responseCode = "403", description = "Contact does not belong to user", ref = "GenericError")
-  })
+  @ApiResponse(responseCode = "204", description = "Contact removed")
+  @ApiResponse(responseCode = "403", description = "Contact does not belong to user", ref = "GenericError")
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(
       @PathVariable UUID id
