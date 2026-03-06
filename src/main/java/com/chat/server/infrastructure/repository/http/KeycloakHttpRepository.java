@@ -21,6 +21,8 @@ import kong.unirest.core.Unirest;
 @Component
 public class KeycloakHttpRepository {
 
+  private static final String BEARER = "Bearer ";
+
   @Value("${keycloak.url}")
   private String url;
 
@@ -50,7 +52,7 @@ public class KeycloakHttpRepository {
     String endpoint = String.format("%s/admin/realms/%s/users", url, realm);
     return Unirest.post(endpoint)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .header(HttpHeaders.AUTHORIZATION, BEARER + jwt)
         .body(request)
         .asJson();
   }
@@ -67,7 +69,7 @@ public class KeycloakHttpRepository {
     return Unirest.get(endpoint)
         .queryString(queryParameters)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .header(HttpHeaders.AUTHORIZATION, BEARER + jwt)
         .asJson();
   }
 
@@ -75,7 +77,7 @@ public class KeycloakHttpRepository {
     String endpoint = String.format("%s/admin/realms/%s/users/%s/reset-password", url, realm, userId);
     return Unirest.put(endpoint)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .header(HttpHeaders.AUTHORIZATION, BEARER + jwt)
         .body(request)
         .asJson();
   }
@@ -84,7 +86,7 @@ public class KeycloakHttpRepository {
     String endpoint = String.format("%s/admin/realms/%s/users/%s/role-mappings/clients/%s", url, realm, userId, requests.get(0).getContainerId());
     return Unirest.post(endpoint)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .header(HttpHeaders.AUTHORIZATION, BEARER + jwt)
         .body(requests)
         .asJson();
   }
@@ -92,7 +94,7 @@ public class KeycloakHttpRepository {
   public HttpResponse<JsonNode> deleteUser(String jwt, UUID userId) {
     String endpoint = String.format("%s/admin/realms/%s/users/%s", url, realm, userId);
     return Unirest.delete(endpoint)
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .header(HttpHeaders.AUTHORIZATION, BEARER + jwt)
         .asJson();
   }
 
