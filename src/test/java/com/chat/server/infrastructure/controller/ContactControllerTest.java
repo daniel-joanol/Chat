@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.util.UUID;
 
 import org.jeasy.random.EasyRandom;
+import org.jeasy.random.EasyRandomParameters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +26,9 @@ import com.chat.server.infrastructure.controller.request.ContactRequest;
 @ExtendWith(MockitoExtension.class)
 class ContactControllerTest {
   
-  EasyRandom generator = new EasyRandom();
+  EasyRandomParameters parameters = new EasyRandomParameters()
+      .randomizationDepth(3);
+  EasyRandom generator = new EasyRandom(parameters);
   ContactDtoMapper mapper = Mappers.getMapper(ContactDtoMapper.class);
 
   @Mock
@@ -40,7 +43,7 @@ class ContactControllerTest {
   }
 
   @Test
-  void testAdd() {
+  void testAdd_returnCreated() {
     var contact = generator.nextObject(Contact.class);
     var request = new ContactRequest(contact.getFriend().getUsername());
     when(service.addContact(any())).thenReturn(contact);
@@ -49,7 +52,7 @@ class ContactControllerTest {
   }
 
   @Test
-  void testDelete() {
+  void testDelete_returnNoContent() {
     var id = UUID.randomUUID();
     var response = sut.delete(id);
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
