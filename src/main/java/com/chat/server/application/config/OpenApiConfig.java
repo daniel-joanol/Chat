@@ -9,6 +9,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -27,14 +28,12 @@ public class OpenApiConfig {
 
   @Bean
   public OpenAPI customOpenAPI() {
-    // Define ErrorResponse schema
-    var errorSchema = new ObjectSchema()
+    Schema<?> errorSchema = new ObjectSchema()
         .addProperty("timestamp", new StringSchema())
         .addProperty("traceId", new StringSchema())
         .addProperty("message", new StringSchema());
 
-    // Define reusable GenericError response with explicit example
-    var genericError = new ApiResponse()
+    ApiResponse genericError = new ApiResponse()
         .description("Standard error response")
         .content(new Content().addMediaType("application/json",
             new MediaType()
