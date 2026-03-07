@@ -3,6 +3,8 @@ package com.chat.server.domain.model;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import com.chat.server.application.util.TimeUtil;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -16,6 +18,12 @@ public class Contact {
   private User user;
   private User friend;
   private ZonedDateTime createdAt;
-  private Boolean isActive;
+
+  public static Contact fromCreationRequest(User user, User friend) {
+    return new Contact()
+        .setUser(user)
+        .setFriend(friend)
+        .setCreatedAt(TimeUtil.now());
+    }
 
 }
