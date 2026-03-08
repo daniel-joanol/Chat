@@ -1,5 +1,6 @@
 package com.chat.server.application.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -30,6 +31,11 @@ public class DefaultUserService implements UserService {
   }
 
   @Override
+  public List<User> getIncompleteUsers() {
+    return userDao.getIncompleteUsers();
+  }
+
+  @Override
   public String authenticate(String username, String password) {
     userDao.getByUsername(username);
     return accessManagementDao.authenticate(username, password);
@@ -38,11 +44,16 @@ public class DefaultUserService implements UserService {
   @Override
   public void deleteUser(String username) {
     User user = userDao.getByUsername(username);
-    String jwt = this.authenticateInternalUser();
-    accessManagementDao.deleteUser(jwt, user.getId());
-    userDao.delete(user.getId());
+    this.deleteUser(user.getId());    
   }
   
+  @Override
+  public void deleteUser(UUID id) {
+    String jwt = this.authenticateInternalUser();
+    accessManagementDao.deleteUser(jwt, id);
+    userDao.delete(id);
+  }
+
   @Override
   public void updatePassword(User user) {
     user = userDao.getById(user.getId());

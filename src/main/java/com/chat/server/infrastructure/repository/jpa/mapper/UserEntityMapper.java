@@ -2,6 +2,7 @@ package com.chat.server.infrastructure.repository.jpa.mapper;
 
 import java.util.List;
 
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -34,10 +35,14 @@ public interface UserEntityMapper {
   @Mapping(target = "role", source = "role", qualifiedByName = "roleToDomain")
   User toDomain(UserEntity entity);
 
+  @Named("toDomainWithoutContacts")
   @Mapping(target = "password", ignore = true)
   @Mapping(target = "contacts", ignore = true)
   @Mapping(target = "role", source = "role", qualifiedByName = "roleToDomain")
   User toDomainWithoutContacts(UserEntity entity);
+
+  @IterableMapping(qualifiedByName = "toDomainWithoutContacts")
+  List<User> toDomainWithoutContacts(List<UserEntity> entities);
 
   @Named("contactsToDomain")
   default List<Contact> contactsToDomain(List<ContactEntity> contacts) {

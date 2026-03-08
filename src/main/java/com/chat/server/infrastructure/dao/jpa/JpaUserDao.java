@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.dao.jpa;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -60,6 +61,12 @@ public class JpaUserDao implements UserDao{
     UserEntity entity = mapper.toEntity(user);
     entity = repository.saveAndFlush(entity);
     return mapper.toDomain(entity);
+  }
+
+  @Override
+  public List<User> getIncompleteUsers() {
+    var entities = repository.getByIsCompleted(false);
+    return mapper.toDomainWithoutContacts(entities);
   }
 
 }
