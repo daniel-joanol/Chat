@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.repository.jpa;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,5 +15,7 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
   boolean existsByEmail(String email);
 
   boolean existsByUsername(String username);
+
+  List<UserEntity> getByIsCreationCompleted(boolean isCompleted);
 
 }

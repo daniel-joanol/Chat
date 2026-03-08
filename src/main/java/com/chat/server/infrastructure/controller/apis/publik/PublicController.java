@@ -1,4 +1,4 @@
-package com.chat.server.infrastructure.controller;
+package com.chat.server.infrastructure.controller.apis.publik;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

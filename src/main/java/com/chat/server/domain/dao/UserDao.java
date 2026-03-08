@@ -1,5 +1,6 @@
 package com.chat.server.domain.dao;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.chat.server.domain.model.User;
@@ -17,5 +18,7 @@ public interface UserDao {
   boolean existsByEmail(String email);
 
   void delete(UUID id);
+
+  List<User> getIncompleteUsers();
 
 }

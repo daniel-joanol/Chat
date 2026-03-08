@@ -31,7 +31,7 @@ public class DefaultPropertyService implements PropertyService {
   }
 
   private String getDefaultInternalUserPass() {
-    String encryptedPass = dao.getValueByName(Constants.PROPERTY_DEFAULT_KEYCLOAk_USER_PASS);
+    String encryptedPass = dao.getValueByName(Constants.PROPERTY_DEFAULT_KEYCLOAK_USER_PASS);
     try {
       return encryptUtil.decrypt(encryptedPass);
     
