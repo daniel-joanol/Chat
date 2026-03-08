@@ -20,6 +20,7 @@ import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.model.UserFactory;
 import com.chat.server.domain.service.UserService;
 import com.chat.server.infrastructure.controller.mapper.UserDtoMapper;
+import com.chat.server.infrastructure.controller.publics.PublicController;
 import com.chat.server.infrastructure.controller.request.LoginRequest;
 import com.chat.server.infrastructure.controller.request.UserRequest;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;

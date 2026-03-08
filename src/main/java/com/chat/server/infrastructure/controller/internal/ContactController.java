@@ -1,4 +1,4 @@
-package com.chat.server.infrastructure.controller;
+package com.chat.server.infrastructure.controller.internal;
 
 import java.util.UUID;
 
