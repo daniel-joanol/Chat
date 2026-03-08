@@ -44,14 +44,14 @@ public class DefaultUserService implements UserService {
   @Override
   public void deleteUser(String username) {
     User user = userDao.getByUsername(username);
-    this.deleteUser(user.getId());    
+    this.deleteUser(user);
   }
   
   @Override
-  public void deleteUser(UUID id) {
+  public void deleteUser(User user) {
     String jwt = this.authenticateInternalUser();
-    accessManagementDao.deleteUser(jwt, id);
-    userDao.delete(id);
+    userDao.delete(user.getId());
+    accessManagementDao.deleteUser(jwt, user.getKeycloakId());
   }
 
   @Override

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chat.server.domain.constants.Constants;
+import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.scheduled.PurgeIncompleteUsersTask;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,15 +29,17 @@ import lombok.RequiredArgsConstructor;
 public class SchedulerController {
 
   private final PurgeIncompleteUsersTask purgeIncompleteUsersTask;
+  private final SecurityUtil securityUtil;
 
   @Operation(
       summary = "Purge incomplete users",
-      description = "Endpoint to trigger purge of incomplete users."
+      description = "Endpoint to trigger the purge of incomplete users."
   )
   @ApiResponse(responseCode = "200", description = "Purge started")
   @PostMapping("/purge-incomplete-users")
   public ResponseEntity<String> purgeIncompleteUsers() {
-    purgeIncompleteUsersTask.asyncStart();
+    String currentUser = securityUtil.getUsername();
+    purgeIncompleteUsersTask.asyncStart(currentUser);
     return ResponseEntity.ok("Purge started");
   }
   
