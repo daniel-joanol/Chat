@@ -65,7 +65,7 @@ public class JpaUserDao implements UserDao{
 
   @Override
   public List<User> getIncompleteUsers() {
-    var entities = repository.getByIsCompleted(false);
+    var entities = repository.getByIsCreationCompleted(false);
     return mapper.toDomainWithoutContacts(entities);
   }
 

@@ -16,6 +16,6 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
 
   boolean existsByUsername(String username);
 
-  List<UserEntity> getByIsCompleted(boolean isCompleted);
+  List<UserEntity> getByIsCreationCompleted(boolean isCompleted);
 
 }

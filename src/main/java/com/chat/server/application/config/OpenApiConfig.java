@@ -4,6 +4,8 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.chat.server.domain.constants.Constants;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Content;
@@ -19,10 +21,26 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 public class OpenApiConfig {
 
   @Bean
-  public GroupedOpenApi v1Api() {
+  public GroupedOpenApi internalApi() {
     return GroupedOpenApi.builder()
-        .group("v1")
-        .pathsToMatch("/**")
+        .group("internal")
+        .pathsToMatch(Constants.INTERNAL_PREFIX_URL + "/**")
+        .build();
+  }
+
+  @Bean
+  public GroupedOpenApi publicApi() {
+    return GroupedOpenApi.builder()
+        .group("public")
+        .pathsToMatch(Constants.PUBLIC_CONTROLLER + "/**")
+        .build();
+  }
+
+  @Bean
+  public GroupedOpenApi maintenanceApi() {
+    return GroupedOpenApi.builder()
+        .group("maintenance")
+        .pathsToMatch(Constants.MAINTENANCE_PREFIX_URL + "/**")
         .build();
   }
 

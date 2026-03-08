@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 public class Constants {
 
   private static final String REST_PREFIX_URL = "/rest/v1";
-  private static final String INTERNAL_PREFIX_URL = REST_PREFIX_URL + "/internal";
-  private static final String MAINTENANCE_PREFIX_URL = REST_PREFIX_URL + "/maintenance";
+  public static final String INTERNAL_PREFIX_URL = REST_PREFIX_URL + "/internal";
+  public static final String MAINTENANCE_PREFIX_URL = REST_PREFIX_URL + "/maintenance";
 
   public static final String PUBLIC_CONTROLLER = REST_PREFIX_URL + "/public";
   public static final String CONTACT_CONTROLLER = INTERNAL_PREFIX_URL + "/contact";

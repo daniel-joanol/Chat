@@ -1,4 +1,4 @@
-package com.chat.server.infrastructure.controller.maintenance;
+package com.chat.server.infrastructure.controller.apis.maintenance;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
