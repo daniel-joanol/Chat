@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.chat.server.domain.dao.AccessManagementDao;
+import com.chat.server.domain.model.TokenInfo;
 import com.chat.server.domain.model.User;
 import com.chat.server.infrastructure.dao.http.mapper.AccessManagementHttpMapper;
 import com.chat.server.infrastructure.dao.http.request.KeycloakFiltersRequest;
@@ -28,7 +29,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   private final AccessManagementHttpMapper mapper;
 
   @Override
-  public String authenticate(String username, String password) {
+  public TokenInfo authenticate(String username, String password) {
     HttpResponse<JsonNode> response = repository.login(username, password)
         .ifFailure(res -> {
           String message = String.format(
@@ -37,7 +38,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
           );
           throw new AuthenticationFailedException(message);
         });
-    return response.getBody().getObject().getString("access_token");
+    return mapper.toTokenInfo(response.getBody().getObject());
   }
 
   @Override

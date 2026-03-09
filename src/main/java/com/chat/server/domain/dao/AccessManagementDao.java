@@ -2,11 +2,12 @@ package com.chat.server.domain.dao;
 
 import java.util.UUID;
 
+import com.chat.server.domain.model.TokenInfo;
 import com.chat.server.domain.model.User;
 
 public interface AccessManagementDao {
   
-  String authenticate(String username, String password);
+  TokenInfo authenticate(String username, String password);
 
   void createUser(String jwt, User user);
 
