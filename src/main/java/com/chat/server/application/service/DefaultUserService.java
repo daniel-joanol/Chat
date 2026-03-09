@@ -10,7 +10,7 @@ import com.chat.server.domain.dao.UserDao;
 import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.UserService;
-import com.chat.server.domain.service.PropertyService;
+import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.RoleService;
 import com.chat.server.infrastructure.exception.ConflictException;
 
@@ -22,8 +22,8 @@ public class DefaultUserService implements UserService {
   
   private final AccessManagementDao accessManagementDao;
   private final UserDao userDao;
-  private final PropertyService propertyService;
   private final RoleService roleService;
+  private final AuthenticationService authService;
 
   @Override
   public User getByUsername(String username) {
@@ -36,12 +36,6 @@ public class DefaultUserService implements UserService {
   }
 
   @Override
-  public String authenticate(String username, String password) {
-    userDao.getByUsername(username);
-    return accessManagementDao.authenticate(username, password);
-  }
-
-  @Override
   public void deleteUser(String username) {
     User user = userDao.getByUsername(username);
     this.deleteUser(user);
@@ -49,7 +43,7 @@ public class DefaultUserService implements UserService {
   
   @Override
   public void deleteUser(User user) {
-    String jwt = this.authenticateInternalUser();
+    String jwt = authService.getInternalUserJwt();
     userDao.delete(user.getId());
     accessManagementDao.deleteUser(jwt, user.getKeycloakId());
   }
@@ -57,7 +51,7 @@ public class DefaultUserService implements UserService {
   @Override
   public void updatePassword(User user) {
     user = userDao.getById(user.getId());
-    String jwt = this.authenticateInternalUser();
+    String jwt = authService.getInternalUserJwt();
     accessManagementDao.updatePassword(jwt, user);
   }
 
@@ -65,7 +59,7 @@ public class DefaultUserService implements UserService {
   public User createUser(User user) {
     this.validateEmail(user.getEmail());
     this.validateUsername(user.getUsername());
-    String jwt = this.authenticateInternalUser();
+    String jwt = authService.getInternalUserJwt();
     String password = user.getPassword();
     Role role = roleService.getByName(user.getRole().getName());
     user.setRole(role);
@@ -81,11 +75,6 @@ public class DefaultUserService implements UserService {
     accessManagementDao.updatePassword(jwt, user);
     user.setIsCreationCompleted(true);
     return userDao.save(user).setRole(role);
-  }
-
-  private String authenticateInternalUser() {
-    User defaultInternalUser = propertyService.getDefaultInternalUser();
-    return accessManagementDao.authenticate(defaultInternalUser.getUsername(), defaultInternalUser.getPassword());
   }
 
   private void validateEmail(String email) {

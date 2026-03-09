@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.chat.server.domain.constants.Constants;
 import com.chat.server.domain.model.User;
 import com.chat.server.domain.model.UserFactory;
+import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.UserService;
 import com.chat.server.infrastructure.controller.mapper.UserDtoMapper;
 import com.chat.server.infrastructure.controller.request.LoginRequest;
@@ -35,8 +36,9 @@ import lombok.RequiredArgsConstructor;
 )
 public class PublicController {
 
-  private final UserService service;
-  private final UserDtoMapper mapper;
+  private final UserService userService;
+  private final UserDtoMapper userMapper;
+  private final AuthenticationService authService;
 
   @Operation(
       summary = "Login",
@@ -53,7 +55,7 @@ public class PublicController {
       @Valid @RequestBody LoginRequest request
   ) {
     try {
-      String token = service.authenticate(request.username(), request.password());
+      String token = authService.authenticate(request.username(), request.password());
       return ResponseEntity
           .status(HttpStatus.OK)
           .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE)
@@ -79,10 +81,10 @@ public class PublicController {
   public ResponseEntity<UserResponse> createUser(
       @Valid @RequestBody UserRequest request
   ) {
-    User user = mapper.toDomain(request);
+    User user = userMapper.toDomain(request);
     user = UserFactory.generateExternalUser(user);
-    user = service.createUser(user);
-    UserResponse response = mapper.toResponse(user);
+    user = userService.createUser(user);
+    UserResponse response = userMapper.toResponse(user);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(response);
