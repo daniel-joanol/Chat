@@ -13,6 +13,7 @@ import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.RoleService;
 import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.ForbiddenException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,15 +44,21 @@ public class DefaultUserService implements UserService {
   
   @Override
   public void deleteUser(User user) {
-    String jwt = authService.getInternalUserJwt();
+    String jwt = authService.getInternalUserJwt(false);
     userDao.delete(user.getId());
-    accessManagementDao.deleteUser(jwt, user.getKeycloakId());
+    try {
+      accessManagementDao.deleteUser(jwt, user.getKeycloakId());
+    } catch (ForbiddenException e) {
+      jwt = authService.getInternalUserJwt(true);
+      accessManagementDao.deleteUser(jwt, user.getKeycloakId());
+    }
+    
   }
 
   @Override
   public void updatePassword(User user) {
     user = userDao.getById(user.getId());
-    String jwt = authService.getInternalUserJwt();
+    String jwt = authService.getInternalUserJwt(false);
     accessManagementDao.updatePassword(jwt, user);
   }
 
@@ -59,7 +66,7 @@ public class DefaultUserService implements UserService {
   public User createUser(User user) {
     this.validateEmail(user.getEmail());
     this.validateUsername(user.getUsername());
-    String jwt = authService.getInternalUserJwt();
+    String jwt = authService.getInternalUserJwt(false);
     String password = user.getPassword();
     Role role = roleService.getByName(user.getRole().getName());
     user.setRole(role);

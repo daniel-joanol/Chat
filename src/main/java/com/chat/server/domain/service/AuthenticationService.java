@@ -4,6 +4,6 @@ public interface AuthenticationService {
 
   String authenticate(String username, String password);
 
-  String getInternalUserJwt();
+  String getInternalUserJwt(boolean forceAuthentication);
   
 }
