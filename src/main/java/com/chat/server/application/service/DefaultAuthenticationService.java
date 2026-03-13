@@ -39,8 +39,8 @@ public class DefaultAuthenticationService implements AuthenticationService {
   }
 
   @Override
-  public String getInternalUserJwt() {
-    boolean authenticate = internalUserJwt == null || expirationDate == null || LocalDateTime.now().isAfter(expirationDate.minusMinutes(2l));
+  public String getInternalUserJwt(boolean forceAuthentication) {
+    boolean authenticate = forceAuthentication || internalUserJwt == null || expirationDate == null || LocalDateTime.now().isAfter(expirationDate.minusMinutes(2l));
     if (authenticate) {
       TokenInfo tokenInfo = this.authenticateInternalUser();
       internalUserJwt = tokenInfo.accessToken();

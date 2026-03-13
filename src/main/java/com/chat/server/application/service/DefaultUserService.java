@@ -15,6 +15,7 @@ import com.chat.server.domain.service.RoleService;
 import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.ForbiddenException;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -43,6 +44,7 @@ public class DefaultUserService implements UserService {
   }
   
   @Override
+  @Transactional
   public void deleteUser(User user) {
     String jwt = authService.getInternalUserJwt(false);
     userDao.delete(user.getId());
@@ -52,14 +54,19 @@ public class DefaultUserService implements UserService {
       jwt = authService.getInternalUserJwt(true);
       accessManagementDao.deleteUser(jwt, user.getKeycloakId());
     }
-    
   }
 
   @Override
   public void updatePassword(User user) {
     user = userDao.getById(user.getId());
     String jwt = authService.getInternalUserJwt(false);
-    accessManagementDao.updatePassword(jwt, user);
+    try {
+      accessManagementDao.updatePassword(jwt, user);
+    } catch (ForbiddenException e) {
+      jwt = authService.getInternalUserJwt(true);
+      accessManagementDao.updatePassword(jwt, user);
+    }
+    
   }
 
   @Override
@@ -70,16 +77,45 @@ public class DefaultUserService implements UserService {
     String password = user.getPassword();
     Role role = roleService.getByName(user.getRole().getName());
     user.setRole(role);
-    accessManagementDao.createUser(jwt, user);
+    
+    try {
+      accessManagementDao.createUser(jwt, user);
+    } catch (ForbiddenException e) {
+      jwt = authService.getInternalUserJwt(true);
+      accessManagementDao.createUser(jwt, user);
+    }
+    
     user = userDao.save(user).setRole(role);
-    UUID keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
-        .getKeycloakId();
+    UUID keycloakId = null;
+
+    try {
+      keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
+          .getKeycloakId();
+    } catch (ForbiddenException e) {
+      jwt = authService.getInternalUserJwt(true);
+      keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
+          .getKeycloakId();
+    }
+    
     user.setKeycloakId(keycloakId);
     user = userDao.save(user).setRole(role)
       .setRole(role)
       .setPassword(password);
-    accessManagementDao.addRole(jwt, user);
-    accessManagementDao.updatePassword(jwt, user);
+
+    try {
+      accessManagementDao.addRole(jwt, user);
+    } catch (ForbiddenException e) {
+      jwt = authService.getInternalUserJwt(true);
+      accessManagementDao.addRole(jwt, user);
+    }
+
+    try {
+      accessManagementDao.updatePassword(jwt, user);
+    } catch (ForbiddenException exception) {
+      jwt = authService.getInternalUserJwt(true);
+      accessManagementDao.updatePassword(jwt, user);
+    }
+
     user.setIsCreationCompleted(true);
     return userDao.save(user).setRole(role);
   }
