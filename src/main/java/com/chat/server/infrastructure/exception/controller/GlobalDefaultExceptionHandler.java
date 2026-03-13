@@ -14,6 +14,7 @@ import com.chat.server.infrastructure.exception.BadRequestException;
 import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import com.chat.server.infrastructure.exception.ForbiddenException;
+import com.chat.server.infrastructure.exception.InteralUserForbiddenException;
 import com.chat.server.infrastructure.exception.InternalException;
 import com.chat.server.infrastructure.exception.response.ErrorResponse;
 import com.chat.server.infrastructure.exception.response.ErrorResponseFactory;
@@ -65,8 +66,8 @@ public class GlobalDefaultExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
   }
 
-  @ExceptionHandler(InternalException.class)
-  public ResponseEntity<ErrorResponse> handleInternalException(InternalException e, HttpServletRequest req) {
+  @ExceptionHandler({InternalException.class, InteralUserForbiddenException.class})
+  public ResponseEntity<ErrorResponse> handleInternalException(AbstractException e, HttpServletRequest req) {
     ErrorResponse response = this.generateResponse(e);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
   }

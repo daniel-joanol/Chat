@@ -24,7 +24,7 @@ import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.exception.BadRequestException;
 import com.chat.server.infrastructure.exception.ConflictException;
-import com.chat.server.infrastructure.exception.ForbiddenException;
+import com.chat.server.infrastructure.exception.InteralUserForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultContactServiceTest {
@@ -87,7 +87,7 @@ class DefaultContactServiceTest {
     when(secUtil.getUsername()).thenReturn(user.getUsername());
     when(dao.getById(any())).thenReturn(contact);
     assertThrows(
-        ForbiddenException.class, 
+        InteralUserForbiddenException.class, 
         () -> sut.delete(id)
     );
   }

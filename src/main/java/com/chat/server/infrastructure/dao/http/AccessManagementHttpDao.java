@@ -14,7 +14,7 @@ import com.chat.server.infrastructure.dao.http.request.KeycloakPasswordRequest;
 import com.chat.server.infrastructure.dao.http.request.KeycloakRoleRequest;
 import com.chat.server.infrastructure.dao.http.request.KeycloakUserRequest;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
-import com.chat.server.infrastructure.exception.ForbiddenException;
+import com.chat.server.infrastructure.exception.InteralUserForbiddenException;
 import com.chat.server.infrastructure.exception.InternalException;
 import com.chat.server.infrastructure.repository.http.KeycloakHttpRepository;
 
@@ -47,7 +47,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     HttpResponse<JsonNode> response = repository.deleteUser(jwt, userId);
     if (response.getStatus() == 403) {
       String message = String.format("Petition to delete user %s forbidden", userId);
-      throw new ForbiddenException(message);
+      throw new InteralUserForbiddenException(message);
     
     } else if (!response.isSuccess()) {
       String message = String.format(
@@ -63,7 +63,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     HttpResponse<JsonNode> response = repository.createUser(jwt, userRequest);
     if (response.getStatus() == 403) {
       String message = String.format("Petition to create user %s forbidden", user.getUsername());
-      throw new ForbiddenException(message);
+      throw new InteralUserForbiddenException(message);
     
     } else if (!response.isSuccess()) {
       String message = String.format(
@@ -79,7 +79,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     HttpResponse<JsonNode> response = repository.getUser(jwt, filtersRequest);
     if (response.getStatus() == 403) {
       String message = String.format("Petition to get user %s forbidden", username);
-      throw new ForbiddenException(message);
+      throw new InteralUserForbiddenException(message);
     
     } else if (!response.isSuccess()) {
       String message = String.format(
@@ -97,7 +97,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     HttpResponse<JsonNode> response = repository.addRoleToUser(jwt, List.of(roleRequest), user.getKeycloakId());
     if (response.getStatus() == 403) {
       String message = String.format("Petition to add role to user %s forbidden", user.getUsername());
-      throw new ForbiddenException(message);
+      throw new InteralUserForbiddenException(message);
     
     } else if (!response.isSuccess()) {
       String message = String.format(
@@ -113,7 +113,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
     HttpResponse<JsonNode> response = repository.updatePassword(jwt, passwordRequest, user.getKeycloakId());
     if (response.getStatus() == 403) {
       String message = String.format("Petition to update password for user %s forbidden", user.getUsername());
-      throw new ForbiddenException(message);
+      throw new InteralUserForbiddenException(message);
     
     } else if (!response.isSuccess()) {
       String message = String.format(
