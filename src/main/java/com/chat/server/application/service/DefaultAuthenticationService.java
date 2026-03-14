@@ -10,6 +10,7 @@ import com.chat.server.domain.model.TokenInfo;
 import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.PropertyService;
+import com.chat.server.domain.service.UserService;
 
 @Service
 public class DefaultAuthenticationService implements AuthenticationService {
@@ -19,12 +20,12 @@ public class DefaultAuthenticationService implements AuthenticationService {
 
   private final AccessManagementDao accessManagementDao;
   private final PropertyService propertyService;
-  private final DefaultUserService userService;
+  private final UserService userService;
 
   public DefaultAuthenticationService(
       AccessManagementDao accessManagementDao,
       PropertyService propertyService,
-      @Lazy DefaultUserService userService
+      @Lazy UserService userService
   ) {
     this.accessManagementDao = accessManagementDao;
     this.propertyService = propertyService;
