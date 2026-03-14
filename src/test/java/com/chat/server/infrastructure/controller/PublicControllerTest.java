@@ -18,6 +18,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.model.UserFactory;
+import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.UserService;
 import com.chat.server.infrastructure.controller.apis.publik.PublicController;
 import com.chat.server.infrastructure.controller.mapper.UserDtoMapper;
@@ -29,30 +30,33 @@ import com.chat.server.infrastructure.exception.EntityNotFoundException;
 @ExtendWith(MockitoExtension.class)
 class PublicControllerTest {
   
-  private UserDtoMapper mapper = Mappers.getMapper(UserDtoMapper.class);
+  private UserDtoMapper userMapper = Mappers.getMapper(UserDtoMapper.class);
   private LoginRequest loginRequest = new LoginRequest("username", "pass");
 
   @Mock
-  private UserService service;
+  private UserService userService;
+
+  @Mock
+  private AuthenticationService authService;
 
   @InjectMocks
   private PublicController sut;
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(sut, "mapper", mapper);
+    ReflectionTestUtils.setField(sut, "userMapper", userMapper);
   }
 
   @Test
   void testLogin_returnValidResponse() {
-    when(service.authenticate(anyString(), anyString())).thenReturn("TOKEN");
+    when(authService.authenticate(anyString(), anyString())).thenReturn("TOKEN");
     var response = sut.login(loginRequest);
     assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
   }
 
   @Test
   void testLogin_whenEntityNotFoundExIsCaught_thenThrowAuthenticationFailedEx() {
-    when(service.authenticate(anyString(), anyString())).thenThrow(EntityNotFoundException.class);
+    when(authService.authenticate(anyString(), anyString())).thenThrow(EntityNotFoundException.class);
     assertThrows(
         AuthenticationFailedException.class,
         () -> sut.login(loginRequest));
@@ -61,9 +65,9 @@ class PublicControllerTest {
   @Test
   void testCreateUser_returnValidResponse() {
     var request = new UserRequest(null, null, null, null, null);
-    var user = mapper.toDomain(request);
+    var user = userMapper.toDomain(request);
     user = UserFactory.generateExternalUser(user);
-    when(service.createUser(any())).thenReturn(user);
+    when(userService.createUser(any())).thenReturn(user);
     var response = sut.createUser(request);
     assertEquals(HttpStatusCode.valueOf(201), response.getStatusCode());
     assertEquals(UserRoleEnum.USER, response.getBody().getRoleName());

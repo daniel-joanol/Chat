@@ -13,7 +13,7 @@ import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.RoleService;
 import com.chat.server.infrastructure.exception.ConflictException;
-import com.chat.server.infrastructure.exception.InteralUserForbiddenException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class DefaultUserService implements UserService {
     userDao.delete(user.getId());
     try {
       accessManagementDao.deleteUser(jwt, user.getKeycloakId());
-    } catch (InteralUserForbiddenException e) {
+    } catch (InternalUserForbiddenException e) {
       jwt = authService.getInternalUserJwt(true);
       accessManagementDao.deleteUser(jwt, user.getKeycloakId());
     }
@@ -62,7 +62,7 @@ public class DefaultUserService implements UserService {
     String jwt = authService.getInternalUserJwt(false);
     try {
       accessManagementDao.updatePassword(jwt, user);
-    } catch (InteralUserForbiddenException e) {
+    } catch (InternalUserForbiddenException e) {
       jwt = authService.getInternalUserJwt(true);
       accessManagementDao.updatePassword(jwt, user);
     }
@@ -80,7 +80,7 @@ public class DefaultUserService implements UserService {
     
     try {
       accessManagementDao.createUser(jwt, user);
-    } catch (InteralUserForbiddenException e) {
+    } catch (InternalUserForbiddenException e) {
       jwt = authService.getInternalUserJwt(true);
       accessManagementDao.createUser(jwt, user);
     }
@@ -91,7 +91,7 @@ public class DefaultUserService implements UserService {
     try {
       keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
           .getKeycloakId();
-    } catch (InteralUserForbiddenException e) {
+    } catch (InternalUserForbiddenException e) {
       jwt = authService.getInternalUserJwt(true);
       keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
           .getKeycloakId();
@@ -104,14 +104,14 @@ public class DefaultUserService implements UserService {
 
     try {
       accessManagementDao.addRole(jwt, user);
-    } catch (InteralUserForbiddenException e) {
+    } catch (InternalUserForbiddenException e) {
       jwt = authService.getInternalUserJwt(true);
       accessManagementDao.addRole(jwt, user);
     }
 
     try {
       accessManagementDao.updatePassword(jwt, user);
-    } catch (InteralUserForbiddenException exception) {
+    } catch (InternalUserForbiddenException exception) {
       jwt = authService.getInternalUserJwt(true);
       accessManagementDao.updatePassword(jwt, user);
     }

@@ -20,6 +20,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.chat.server.domain.enumerator.UserRoleEnum;
+import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
 import com.chat.server.infrastructure.dao.http.mapper.AccessManagementHttpMapper;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
@@ -40,7 +42,8 @@ class AccessManagementHttpDaoTest {
   private String jwt = "JWT";
   private JsonNode errorNode = new JsonNode("{\"message\": \"some error\"}");
   private UUID userId = UUID.randomUUID();
-  private User user = generator.nextObject(User.class);
+  private User user;
+  private Role role;
 
   private AccessManagementHttpMapper mapper = Mappers.getMapper(AccessManagementHttpMapper.class);
   
@@ -56,14 +59,20 @@ class AccessManagementHttpDaoTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(sut, "mapper", mapper);
+    role = new Role()
+        .setName(UserRoleEnum.USER)
+        .setClientId(UUID.randomUUID())
+        .setKeycloakId(UUID.randomUUID());
+    user = generator.nextObject(User.class)
+        .setRole(role);
   }
 
   @Test
   void testLogin_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
-    JsonNode node = new JsonNode("{\"access_token\": \"TOKEN\"}");
-    
+    JsonNode node = new JsonNode("{\"access_token\": \"TOKEN\", \"expires_in\": 3600}");
+
     when(repository.login(anyString(), any())).thenReturn(mockedResponse);
-    when(mockedResponse.ifFailure(any())).thenReturn(mockedResponse); 
+    when(mockedResponse.ifFailure(any())).thenReturn(mockedResponse);
     when(mockedResponse.getBody()).thenReturn(node);
 
     sut.authenticate(username, password);
@@ -71,9 +80,9 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testLogin_whenReponseIsFailure_thenThrowException() {
+  void testLogin_whenResponseIsFailure_thenThrowException() {
     when(repository.login(anyString(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    this.mockLoginFailure();
     
     assertThrows(
         AuthenticationFailedException.class, 
@@ -84,6 +93,7 @@ class AccessManagementHttpDaoTest {
   @Test
   void testDeleteUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
     when(repository.deleteUser(anyString(), any())).thenReturn(mockedResponse);
+    mockHttpSuccess();
     sut.deleteUser(jwt, userId);
     verify(repository).deleteUser(anyString(), any());
   }
@@ -91,11 +101,11 @@ class AccessManagementHttpDaoTest {
   @Test
   void testDeleteUser_whenResponseIsFailure_thenThrowException() {
     when(repository.deleteUser(anyString(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    mockHttpFailure();
     
     assertThrows(
         InternalException.class, 
-        () -> sut.deleteUser(anyString(), any())
+        () -> sut.deleteUser(jwt, userId)
     );
   }
 
@@ -108,7 +118,7 @@ class AccessManagementHttpDaoTest {
     ));
 
     when(repository.getUser(anyString(), any())).thenReturn(mockedResponse);
-    when(mockedResponse.ifFailure(any())).thenReturn(mockedResponse);
+    mockHttpSuccess();
     when(mockedResponse.getBody()).thenReturn(node);
 
     sut.getUser(jwt, username);
@@ -118,17 +128,18 @@ class AccessManagementHttpDaoTest {
   @Test
   void testGetUser_whenResponseIsFailure_thenThrowException() {
     when(repository.getUser(anyString(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    mockHttpFailure();
     
     assertThrows(
         InternalException.class,
-        () -> sut.getUser(anyString(), any())
+        () -> sut.getUser(jwt, username)
     );
   }
 
   @Test
   void testAddRole_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
     when(repository.addRoleToUser(anyString(), any(), any())).thenReturn(mockedResponse);
+    mockHttpSuccess();
     sut.addRole(jwt, user);
     verify(repository).addRoleToUser(anyString(), any(), any());
   }
@@ -136,7 +147,7 @@ class AccessManagementHttpDaoTest {
   @Test
   void testAddRole_whenResponseIsFailure_thenThrowException() {
     when(repository.addRoleToUser(anyString(), any(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    mockHttpFailure();
     
     assertThrows(
         InternalException.class,
@@ -147,14 +158,15 @@ class AccessManagementHttpDaoTest {
   @Test
   void testUpdatePassword_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
     when(repository.updatePassword(anyString(), any(), any())).thenReturn(mockedResponse);
+    mockHttpSuccess();
     sut.updatePassword(jwt, user);
     verify(repository).updatePassword(anyString(), any(), any());
   }
 
   @Test
-  void testUpdatePassowrd_whenResponseIsFailue_thenThrowException() {
+  void testUpdatePassword_whenResponseIsFailure_thenThrowException() {
     when(repository.updatePassword(anyString(), any(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    mockHttpFailure();
 
     assertThrows(
         InternalException.class,
@@ -162,13 +174,24 @@ class AccessManagementHttpDaoTest {
     );
   }
 
-  private void mockIfFailureTrue() {
+  private void mockHttpSuccess() {
+    when(mockedResponse.getStatus()).thenReturn(200);
+    when(mockedResponse.isSuccess()).thenReturn(true);
+  }
+
+  private void mockHttpFailure() {
+    when(mockedResponse.getStatus()).thenReturn(500);
+    when(mockedResponse.isSuccess()).thenReturn(false);
+    when(mockedResponse.getBody()).thenReturn(errorNode);
+  }
+
+  private void mockLoginFailure() {
     when(mockedResponse.ifFailure(any())).thenAnswer(invocation -> {
-      Consumer<HttpResponse<JsonNode>> c = invocation.getArgument(0);
-      c.accept(mockedResponse);
+      Consumer<HttpResponse<JsonNode>> consumer = invocation.getArgument(0);
+      consumer.accept(mockedResponse);
       return mockedResponse;
     });
-    when(mockedResponse.getStatus()).thenReturn(400);
+    when(mockedResponse.getStatus()).thenReturn(401);
     when(mockedResponse.getBody()).thenReturn(errorNode);
   }
 

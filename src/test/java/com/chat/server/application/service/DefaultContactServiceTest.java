@@ -24,7 +24,7 @@ import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.exception.BadRequestException;
 import com.chat.server.infrastructure.exception.ConflictException;
-import com.chat.server.infrastructure.exception.InteralUserForbiddenException;
+import com.chat.server.infrastructure.exception.ForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultContactServiceTest {
@@ -57,9 +57,10 @@ class DefaultContactServiceTest {
   @Test
   void testAddContact_whenUserAddingSelf_thenThrowBadRequestEx() {
     when(secUtil.getUsername()).thenReturn(user.getUsername());
+    var username = user.getUsername();
     assertThrows(
         BadRequestException.class,
-        () -> sut.addContact(user.getUsername())
+        () -> sut.addContact(username)
     );
   }
 
@@ -67,9 +68,10 @@ class DefaultContactServiceTest {
   void testAddContact_whenContactExists_thenThrowConflictEx() {
     when(secUtil.getUsername()).thenReturn(user.getUsername());
     when(dao.exists(anyString(), anyString())).thenReturn(true);
+    var username = contact.getFriend().getUsername();
     assertThrows(
         ConflictException.class, 
-      () -> sut.addContact(contact.getFriend().getUsername())
+      () -> sut.addContact(username)
     );
   }
 
@@ -87,7 +89,7 @@ class DefaultContactServiceTest {
     when(secUtil.getUsername()).thenReturn(user.getUsername());
     when(dao.getById(any())).thenReturn(contact);
     assertThrows(
-        InteralUserForbiddenException.class, 
+        ForbiddenException.class, 
         () -> sut.delete(id)
     );
   }
