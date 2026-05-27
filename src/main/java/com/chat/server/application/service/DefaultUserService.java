@@ -10,6 +10,7 @@ import com.chat.server.domain.dao.UserDao;
 import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.UserService;
+import com.chat.server.domain.util.RetryHttpFunction;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.RoleService;
 import com.chat.server.infrastructure.exception.ConflictException;
@@ -46,78 +47,54 @@ public class DefaultUserService implements UserService {
   @Override
   @Transactional
   public void deleteUser(User user) {
-    String jwt = authService.getInternalUserJwt(false);
     userDao.delete(user.getId());
-    try {
-      accessManagementDao.deleteUser(jwt, user.getKeycloakId());
-    } catch (InternalUserForbiddenException e) {
-      jwt = authService.getInternalUserJwt(true);
-      accessManagementDao.deleteUser(jwt, user.getKeycloakId());
-    }
+    this.executeWithRetry(jwt -> {
+        accessManagementDao.deleteUser(jwt, user.getKeycloakId());
+        return null;
+    });
   }
 
   @Override
   public void updatePassword(User user) {
-    user = userDao.getById(user.getId());
-    String jwt = authService.getInternalUserJwt(false);
-    try {
-      accessManagementDao.updatePassword(jwt, user);
-    } catch (InternalUserForbiddenException e) {
-      jwt = authService.getInternalUserJwt(true);
-      accessManagementDao.updatePassword(jwt, user);
-    }
-    
+    var dbUser = userDao.getById(user.getId());
+    this.executeWithRetry(jwt -> {
+        accessManagementDao.updatePassword(jwt, dbUser);
+        return null;
+    });
   }
 
   @Override
   public User createUser(User user) {
     this.validateEmail(user.getEmail());
     this.validateUsername(user.getUsername());
-    String jwt = authService.getInternalUserJwt(false);
-    String password = user.getPassword();
+
     Role role = roleService.getByName(user.getRole().getName());
     user.setRole(role);
     
-    try {
+    this.executeWithRetry(jwt -> {
       accessManagementDao.createUser(jwt, user);
-    } catch (InternalUserForbiddenException e) {
-      jwt = authService.getInternalUserJwt(true);
-      accessManagementDao.createUser(jwt, user);
-    }
-    
-    user = userDao.save(user).setRole(role);
-    UUID keycloakId = null;
+      return null;
+    });
+    var dbUser = userDao.save(user);
 
-    try {
-      keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
-          .getKeycloakId();
-    } catch (InternalUserForbiddenException e) {
-      jwt = authService.getInternalUserJwt(true);
-      keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
-          .getKeycloakId();
-    }
-    
-    user.setKeycloakId(keycloakId);
-    user = userDao.save(user).setRole(role)
-      .setRole(role)
-      .setPassword(password);
+    UUID keycloakId = this.executeWithRetry(jwt -> {
+      return accessManagementDao.getUser(jwt, user.getUsername());
+    }).getKeycloakId();
+    dbUser.setKeycloakId(keycloakId);
+    dbUser = userDao.save(dbUser);
 
-    try {
+    this.executeWithRetry(jwt -> {
       accessManagementDao.addRole(jwt, user);
-    } catch (InternalUserForbiddenException e) {
-      jwt = authService.getInternalUserJwt(true);
-      accessManagementDao.addRole(jwt, user);
-    }
+      return null;
+    });
 
-    try {
+    this.executeWithRetry(jwt -> {
       accessManagementDao.updatePassword(jwt, user);
-    } catch (InternalUserForbiddenException exception) {
-      jwt = authService.getInternalUserJwt(true);
-      accessManagementDao.updatePassword(jwt, user);
-    }
-
+      return null;
+    });
+    
     user.setIsCreationCompleted(true);
-    return userDao.save(user).setRole(role);
+    return userDao.save(user);
   }
 
   private void validateEmail(String email) {
@@ -131,6 +108,16 @@ public class DefaultUserService implements UserService {
     if (userDao.existsByUsername(username)) {
       String message = String.format("Duplicated username: %s", username);
       throw new ConflictException(message);
+    }
+  }
+
+  private <T> T executeWithRetry(RetryHttpFunction<T> function) {
+    String jwt = authService.getInternalUserJwt(false);
+    try {
+      return function.execute(jwt);
+    } catch (InternalUserForbiddenException e) {
+      jwt = authService.getInternalUserJwt(true);
+      return function.execute(jwt);
     }
   }
 
