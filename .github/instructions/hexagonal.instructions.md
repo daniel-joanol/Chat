@@ -50,6 +50,7 @@ This project uses **Hexagonal Architecture** (Ports and Adapters). Follow these 
 
 - Use MapStruct for all object-to-object mapping. Never write field-by-field mapping by hand.
 - Mapper interfaces go in the `mapper/` sub-package of the layer that owns them.
+- Do not mock mappers in tests. Mappers are simple, generated code and mocking them hides mapping issues. In unit tests prefer to use the real mapper implementation (instantiate with `org.mapstruct.factory.Mappers.getMapper(YourMapper.class)` or include the mapper bean in a lightweight Spring test context). Only mock mappers in exceptional cases with a clear justification documented in the test.
 
 ## Database changes
 
