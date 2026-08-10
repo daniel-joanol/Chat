@@ -8,7 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.chat.server.infrastructure.exception.AbstractException;
+import com.chat.server.infrastructure.exception.CheckedException;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.BadRequestException;
 import com.chat.server.infrastructure.exception.ConflictException;
@@ -67,7 +67,7 @@ public class GlobalDefaultExceptionHandler {
   }
 
   @ExceptionHandler({InternalException.class, InternalUserForbiddenException.class})
-  public ResponseEntity<ErrorResponse> handleInternalException(AbstractException e, HttpServletRequest req) {
+  public ResponseEntity<ErrorResponse> handleInternalException(CheckedException e, HttpServletRequest req) {
     ErrorResponse response = this.generateResponse(e);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
   }
@@ -85,7 +85,7 @@ public class GlobalDefaultExceptionHandler {
     return ErrorResponseFactory.getResponse(e, traceId);
   }
 
-  private ErrorResponse generateResponse(AbstractException e) {
+  private ErrorResponse generateResponse(CheckedException e) {
     UUID traceId = UUID.randomUUID();
     String message = String.format("[%s] %s", traceId, e.getInternalMessage());
     log.error(message, e);

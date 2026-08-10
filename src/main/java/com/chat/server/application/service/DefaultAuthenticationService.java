@@ -11,6 +11,9 @@ import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.PropertyService;
 import com.chat.server.domain.service.UserService;
+import com.chat.server.infrastructure.exception.AuthenticationFailedException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.InternalException;
 
 @Service
 public class DefaultAuthenticationService implements AuthenticationService {
@@ -33,14 +36,14 @@ public class DefaultAuthenticationService implements AuthenticationService {
   }
 
   @Override
-  public String authenticate(String username, String password) {
+  public String authenticate(String username, String password) throws EntityNotFoundException, AuthenticationFailedException {
     userService.getByUsername(username);
     TokenInfo tokenInfo = accessManagementDao.authenticate(username, password);
     return tokenInfo.accessToken();
   }
 
   @Override
-  public String getInternalUserJwt(boolean forceAuthentication) {
+  public String getInternalUserJwt(boolean forceAuthentication) throws AuthenticationFailedException {
     boolean authenticate = forceAuthentication || internalUserJwt == null || expirationDate == null || LocalDateTime.now().isAfter(expirationDate.minusMinutes(2l));
     if (authenticate) {
       TokenInfo tokenInfo = this.authenticateInternalUser();
@@ -51,7 +54,7 @@ public class DefaultAuthenticationService implements AuthenticationService {
     return internalUserJwt;
   }
 
-  private TokenInfo authenticateInternalUser() {
+  private TokenInfo authenticateInternalUser() throws InternalException, AuthenticationFailedException {
     User defaultInternalUser = propertyService.getDefaultInternalUser();
     return accessManagementDao.authenticate(defaultInternalUser.getUsername(), defaultInternalUser.getPassword());
   }

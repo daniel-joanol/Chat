@@ -30,15 +30,14 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   private final AccessManagementHttpMapper mapper;
 
   @Override
-  public TokenInfo authenticate(String username, String password)
-      throws AuthenticationFailedException {
-    HttpResponse<JsonNode> response = repository.login(username, password)
-        .ifFailure(res -> {
-          String message = String.format(
-              "Error authenticating %s on Keycloak. Petition response: %d, {%s}",
-              username, res.getStatus(), res.getBody());
-          throw new AuthenticationFailedException(message);
-        });
+  public TokenInfo authenticate(String username, String password) throws AuthenticationFailedException {
+    HttpResponse<JsonNode> response = repository.login(username, password);
+    if (!response.isSuccess()) {
+      String message = String.format(
+          "Error authenticating %s on Keycloak. Petition response: %d, {%s}",
+          username, response.getStatus(), response.getBody());
+      throw new AuthenticationFailedException(message);
+    };
         
     return mapper.toTokenInfo(response.getBody().getObject());
   }

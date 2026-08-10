@@ -26,6 +26,7 @@ import com.chat.server.domain.model.User;
 import com.chat.server.infrastructure.dao.http.mapper.AccessManagementHttpMapper;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.InternalException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 import com.chat.server.infrastructure.repository.http.KeycloakHttpRepository;
 
 import kong.unirest.core.HttpResponse;
@@ -68,7 +69,7 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testLogin_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testLogin_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws AuthenticationFailedException {
     JsonNode node = new JsonNode("{\"access_token\": \"TOKEN\", \"expires_in\": 3600}");
 
     when(repository.login(anyString(), any())).thenReturn(mockedResponse);
@@ -91,7 +92,7 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testDeleteUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testDeleteUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws InternalException, InternalUserForbiddenException {
     when(repository.deleteUser(anyString(), any())).thenReturn(mockedResponse);
     mockHttpSuccess();
     sut.deleteUser(jwt, userId);
@@ -110,7 +111,7 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testGetUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testGetUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws InternalException, InternalUserForbiddenException {
     JsonNode node = new JsonNode(
         String.format(
             "[{\"id\": \"%s\", \"username\": \"%s\", \"firstName\":\"bla\", \"email\": \"a@com\", \"enabled\": true}]",
@@ -137,7 +138,7 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testAddRole_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testAddRole_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws InternalException, InternalUserForbiddenException {
     when(repository.addRoleToUser(anyString(), any(), any())).thenReturn(mockedResponse);
     mockHttpSuccess();
     sut.addRole(jwt, user);
@@ -156,7 +157,7 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testUpdatePassword_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testUpdatePassword_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws InternalException, InternalUserForbiddenException {
     when(repository.updatePassword(anyString(), any(), any())).thenReturn(mockedResponse);
     mockHttpSuccess();
     sut.updatePassword(jwt, user);

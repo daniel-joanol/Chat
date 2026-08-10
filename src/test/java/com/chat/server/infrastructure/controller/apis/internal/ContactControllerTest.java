@@ -22,6 +22,10 @@ import com.chat.server.domain.model.Contact;
 import com.chat.server.domain.service.ContactService;
 import com.chat.server.infrastructure.controller.mapper.ContactDtoMapper;
 import com.chat.server.infrastructure.controller.request.ContactRequest;
+import com.chat.server.infrastructure.exception.BadRequestException;
+import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.ForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
 class ContactControllerTest {
@@ -43,7 +47,7 @@ class ContactControllerTest {
   }
 
   @Test
-  void testAdd_returnCreated() {
+  void testAdd_returnCreated() throws BadRequestException, ConflictException, EntityNotFoundException {
     var contact = generator.nextObject(Contact.class);
     var request = new ContactRequest(contact.getFriend().getUsername());
     when(service.addContact(any())).thenReturn(contact);
@@ -52,7 +56,7 @@ class ContactControllerTest {
   }
 
   @Test
-  void testDelete_returnNoContent() {
+  void testDelete_returnNoContent() throws ForbiddenException, EntityNotFoundException {
     var id = UUID.randomUUID();
     var response = sut.delete(id);
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());

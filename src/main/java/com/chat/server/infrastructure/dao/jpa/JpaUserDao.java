@@ -40,23 +40,25 @@ public class JpaUserDao implements UserDao{
   @Override
   public User getById(UUID id)
       throws EntityNotFoundException {
-    return repository.findById(id)
-        .map(mapper::toDomain)
-        .orElseThrow(() -> {
-          String message = String.format("User not found: %s", id);
-          throw new EntityNotFoundException(message);
-        });
+    var entity = repository.findById(id);
+    if (entity.isPresent()) {
+      return mapper.toDomain(entity.get());
+    }
+
+    String message = String.format("User not found: %s", id);
+    throw new EntityNotFoundException(message);
   }
-  
+
   @Override
   public User getByUsername(String username)
       throws EntityNotFoundException {
-    return repository.getByUsername(username)
-        .map(mapper::toDomain)
-        .orElseThrow(() -> {
-          String message = String.format("Username not found: %s", username);
-          throw new EntityNotFoundException(message);
-        });
+    var entity = repository.getByUsername(username);
+    if (entity.isPresent()) {
+      return mapper.toDomain(entity.get());
+    }
+
+    String message = String.format("Username not found: %s", username);
+    throw new EntityNotFoundException(message);
   }
 
   @Override

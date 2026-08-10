@@ -19,6 +19,8 @@ import com.chat.server.domain.model.TokenInfo;
 import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.PropertyService;
 import com.chat.server.domain.service.UserService;
+import com.chat.server.infrastructure.exception.AuthenticationFailedException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultAuthenticationServiceTest {
@@ -47,14 +49,14 @@ class DefaultAuthenticationServiceTest {
   }
 
   @Test
-  void testAuthenticate_returnToken() {
+  void testAuthenticate_returnToken() throws EntityNotFoundException, AuthenticationFailedException {
     when(accessManagementDao.authenticate(anyString(), anyString())).thenReturn(tokenInfo);
     var response = sut.authenticate("username", "password");
     assertNotNull(response);
   }
 
   @Test
-  void testGetInternalUserJwt_returnToken() {
+  void testGetInternalUserJwt_returnToken() throws AuthenticationFailedException {
     when(propertyService.getDefaultInternalUser()).thenReturn(user);
     when(accessManagementDao.authenticate(anyString(), anyString())).thenReturn(tokenInfo);
     var response = sut.getInternalUserJwt(false);

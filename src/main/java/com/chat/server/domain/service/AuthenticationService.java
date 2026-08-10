@@ -27,7 +27,8 @@ public interface AuthenticationService {
    *
    * @param forceAuthentication whether to force re-authentication even though the token may not have expired
    * @return a JWT access token for the internal user
+   * @throws AuthenticationFailedException when credentials are invalid
    */
-  String getInternalUserJwt(boolean forceAuthentication);
+  String getInternalUserJwt(boolean forceAuthentication) throws AuthenticationFailedException;
   
 }

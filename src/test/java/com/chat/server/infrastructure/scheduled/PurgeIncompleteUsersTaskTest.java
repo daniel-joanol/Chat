@@ -1,7 +1,6 @@
 package com.chat.server.infrastructure.scheduled;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +17,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.UserService;
+import com.chat.server.infrastructure.exception.AuthenticationFailedException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
 class PurgeIncompleteUsersTaskTest {
@@ -42,7 +44,7 @@ class PurgeIncompleteUsersTaskTest {
   }
 
   @Test
-  void purge_purgesSuccessfulUsersAndContinuesOnFailure() {
+  void purge_purgesSuccessfulUsersAndContinuesOnFailure() throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
     when(userService.getIncompleteUsers()).thenReturn(List.of(user1, user2));
     doThrow(new RuntimeException("fail")).when(userService).deleteUser(user1);
 

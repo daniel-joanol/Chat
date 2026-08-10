@@ -30,6 +30,7 @@ import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import com.chat.server.infrastructure.exception.InternalException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
 class PublicControllerTest {
@@ -70,7 +71,7 @@ class PublicControllerTest {
   }
 
   @Test
-  void testCreateUser_returnValidResponse() throws ConflictException {
+  void testCreateUser_returnValidResponse() throws ConflictException, InternalUserForbiddenException, AuthenticationFailedException {
     var request = new UserRequest(null, null, null, null, null);
     var user = userMapper.toDomain(request);
     user = UserFactory.generateExternalUser(user);
@@ -81,7 +82,7 @@ class PublicControllerTest {
   }
 
   @Test
-  void logout_callsServiceAndReturnsNoContent() throws InternalException {
+  void logout_callsServiceAndReturnsNoContent() throws InternalException, EntityNotFoundException {
     when(securityUtil.getUsername()).thenReturn("testuser");
 
     ResponseEntity<Void> resp = sut.logout();

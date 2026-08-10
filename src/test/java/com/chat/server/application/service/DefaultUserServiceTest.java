@@ -9,7 +9,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
@@ -29,7 +28,9 @@ import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.PropertyService;
 import com.chat.server.domain.service.RoleService;
+import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,7 +67,7 @@ class DefaultUserServiceTest {
   }
 
   @Test
-  void testDeleteUser_givenForbiddenEx_thenRetryWithAdminJwt() {
+  void testDeleteUser_givenForbiddenEx_thenRetryWithAdminJwt() throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
     when(userDao.getByUsername(anyString())).thenReturn(user);
     when(authService.getInternalUserJwt(anyBoolean())).thenReturn("TOKEN");
     doThrow(new InternalUserForbiddenException("Forbidden"))
@@ -77,7 +78,7 @@ class DefaultUserServiceTest {
   }
 
   @Test
-  void testUpdatePassword_givenForbiddenEx_thenRetryWithAdminJwt() {
+  void testUpdatePassword_givenForbiddenEx_thenRetryWithAdminJwt() throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
     when(userDao.getById(any())).thenReturn(user);
     when(authService.getInternalUserJwt(anyBoolean())).thenReturn("TOKEN");
     doThrow(new InternalUserForbiddenException("Forbidden"))
@@ -88,7 +89,7 @@ class DefaultUserServiceTest {
   }
 
   @Test
-  void testCreateUser_givenForbiddenEx_thenReturnExternalUser() {    
+  void testCreateUser_givenForbiddenEx_thenReturnExternalUser() throws ConflictException, InternalUserForbiddenException, AuthenticationFailedException {    
     when(userDao.existsByEmail(anyString())).thenReturn(false);
     when(userDao.existsByUsername(anyString())).thenReturn(false);
     when(authService.getInternalUserJwt(anyBoolean())).thenReturn("TOKEN");
@@ -112,23 +113,7 @@ class DefaultUserServiceTest {
   }
 
   @Test
-  void testAuthenticate_setsUserOnlineAndReturnsToken() {
-    user.setStatus(UserStatusEnum.OFFLINE);
-    when(userDao.getByUsername(anyString())).thenReturn(user);
-    when(accessManagementDao.authenticate(anyString(), anyString())).thenReturn("TOKEN");
-    when(userDao.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-    String token = sut.authenticate("any", "pass");
-    assertEquals("TOKEN", token);
-
-    ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-    verify(userDao).save(captor.capture());
-    User saved = captor.getValue();
-    assertEquals(UserStatusEnum.ONLINE, saved.getStatus());
-  }
-
-  @Test
-  void testLogout_setsUserOfflineAndSaves() {
+  void testLogout_setsUserOfflineAndSaves() throws EntityNotFoundException {
     user.setStatus(UserStatusEnum.ONLINE);
     when(userDao.getByUsername(anyString())).thenReturn(user);
     when(userDao.save(any())).thenAnswer(invocation -> invocation.getArgument(0));

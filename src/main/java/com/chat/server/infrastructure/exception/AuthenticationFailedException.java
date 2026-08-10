@@ -1,6 +1,6 @@
 package com.chat.server.infrastructure.exception;
 
-public final class AuthenticationFailedException extends AbstractException {
+public final class AuthenticationFailedException extends CheckedException {
 
   private static final String EXTERNAL_MESSAGE = "Authentication failed.";
   

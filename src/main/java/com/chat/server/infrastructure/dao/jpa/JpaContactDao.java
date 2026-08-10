@@ -31,12 +31,13 @@ public class JpaContactDao implements ContactDao {
   @Override
   public Contact getById(UUID id)
       throws EntityNotFoundException {
-    return repository.findById(id)
-        .map(mapper::toDomain)
-        .orElseThrow(() -> {
-          var message = String.format("Contact not found: %s", id);
-          throw new EntityNotFoundException(message);
-        });
+    var entity = repository.findById(id);
+    if (entity.isPresent()) {
+      return mapper.toDomain(entity.get());
+    }
+
+    String message = String.format("Contact not found: %s", id);
+    throw new EntityNotFoundException(message);
   }
   
   @Override
