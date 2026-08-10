@@ -19,5 +19,7 @@ public interface UserService {
   void deleteUser(String username);
 
   List<User> getIncompleteUsers();
+   
+  void logout(String username);
   
 }

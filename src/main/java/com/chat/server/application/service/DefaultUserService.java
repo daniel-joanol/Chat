@@ -59,6 +59,13 @@ public class DefaultUserService implements UserService {
   }
 
   @Override
+  public void logout(String username) {
+    User user = userDao.getByUsername(username);
+    user.setStatus(UserStatusEnum.OFFLINE);
+    userDao.save(user);
+  }
+
+  @Override
   public void updatePassword(User user) {
     user = userDao.getById(user.getId());
     String jwt = this.authenticateInternalUser();

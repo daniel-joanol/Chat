@@ -59,3 +59,17 @@ This project uses **Hexagonal Architecture** (Ports and Adapters). Follow these 
 ## Constants
 
 - Add new URL paths and role strings to `domain/constants/Constants.java` — never hardcode them in controllers.
+
+## Testing conventions
+
+- In test sources (src/test/java), prefer using `var` for local variable declarations when the variable's type is obvious from the right-hand side. Examples: `var user = new User();`, `var response = sut.logout();`.
+- Use explicit types instead of `var` when it improves readability, such as complex generic types or when the returned type is not apparent from the assignment.
+- Test method names should describe behavior and expectation (e.g., `logout_setsUserOfflineAndSaves`). Variable names in tests should be descriptive and show intent (e.g., `savedUser`, `responseEntity`).
+- Keep test code self-documenting: avoid comments that only restate what the code does. Use comments only for non-obvious test setup or important domain constraints.
+- Keep tests fast and deterministic: prefer unit tests with mocks for logic verification and use integration tests only when necessary.
+
+## Deprecated APIs
+
+- Avoid using deprecated JDK, library, or framework APIs in new code. Deprecated APIs are a maintenance and compatibility risk.
+- If using a deprecated API is temporarily unavoidable, add a short justification (TODO or comment) that references a tracker/ticket and a plan to replace it.
+- Prefer stable, supported alternatives and update usages proactively when upgrading dependencies.

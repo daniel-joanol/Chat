@@ -85,6 +85,21 @@ class DefaultUserServiceTest {
     User saved = captor.getValue();
     assertEquals(UserStatusEnum.ONLINE, saved.getStatus());
   }
+
+  @Test
+  void testLogout_setsUserOfflineAndSaves() {
+    user.setStatus(UserStatusEnum.ONLINE);
+    when(userDao.getByUsername(anyString())).thenReturn(user);
+    when(userDao.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    sut.logout("someuser");
+
+    var captor = ArgumentCaptor.forClass(User.class);
+    verify(userDao).save(captor.capture());
+    User saved = captor.getValue();
+    assertEquals(UserStatusEnum.OFFLINE, saved.getStatus());
+  }
+
   @Test
   void testCreateUser_givenDuplicatedEmail_thenThrowConflictException() {
     when(userDao.existsByEmail(anyString())).thenReturn(true);
