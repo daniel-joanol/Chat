@@ -1,6 +1,7 @@
 package com.chat.server.infrastructure.scheduled;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +37,6 @@ class PurgeIncompleteUsersTaskTest {
   void setUp() {
     user1 = generator.nextObject(User.class);
     user2 = generator.nextObject(User.class);
-    // ensure usernames are defined
     user1.setUsername("u1");
     user2.setUsername("u2");
   }
@@ -44,12 +44,10 @@ class PurgeIncompleteUsersTaskTest {
   @Test
   void purge_purgesSuccessfulUsersAndContinuesOnFailure() {
     when(userService.getIncompleteUsers()).thenReturn(List.of(user1, user2));
-    // simulate failure deleting user2
-    doThrow(new RuntimeException("fail")).when(userService).deleteUser(user2);
+    doThrow(new RuntimeException("fail")).when(userService).deleteUser(user1);
 
     int purged = sut.purge();
 
-    // only user1 should be counted
     assertEquals(1, purged);
   }
 

@@ -31,7 +31,7 @@ class SchedulerControllerTest {
 
     var resp = sut.purgeIncompleteUsers();
 
-    assertEquals(200, resp.getStatusCode());
+    assertEquals(200, resp.getStatusCodeValue());
     verify(securityUtil).getUsername();
     verify(purgeIncompleteUsersTask).asyncStart("adminUser");
   }
