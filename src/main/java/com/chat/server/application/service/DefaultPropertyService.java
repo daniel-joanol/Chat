@@ -20,7 +20,8 @@ public class DefaultPropertyService implements PropertyService {
   private final EncryptUtil encryptUtil;
 
   @Override
-  public User getDefaultInternalUser() {
+  public User getDefaultInternalUser()
+      throws InternalException {
     String username = this.getDefaultInternalUsername();
     String pass = this.getDefaultInternalUserPass();
     return UserFactory.generateDefaultInternalUser(username, pass);

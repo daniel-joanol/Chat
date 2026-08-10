@@ -1,5 +1,7 @@
 package com.chat.server.domain.dao;
 
+
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,9 +17,10 @@ public interface UserDao {
    *
    * @param id the user id
    * @return the matching User
-   * @throws com.chat.server.infrastructure.exception.EntityNotFoundException when the user does not exist
+   * @throws EntityNotFoundException when the user does not exist
    */
-  User getById(UUID id);
+  User getById(UUID id)
+      throws EntityNotFoundException;
 
   /**
    * Save a user.
@@ -32,9 +35,10 @@ public interface UserDao {
    *
    * @param username the username to search for
    * @return the matching User
-   * @throws com.chat.server.infrastructure.exception.EntityNotFoundException when the user does not exist
+   * @throws EntityNotFoundException when the user does not exist
    */
-  User getByUsername(String username);
+  User getByUsername(String username)
+      throws EntityNotFoundException;
 
   /**
    * Check whether a user with the given username exists.

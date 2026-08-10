@@ -1,6 +1,9 @@
 package com.chat.server.domain.service;
 
 import java.util.List;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.AuthenticationFailedException;
+import com.chat.server.infrastructure.exception.ConflictException;
 
 import com.chat.server.domain.model.User;
 
@@ -14,9 +17,9 @@ public interface UserService {
    *
    * @param username the username to search for
    * @return the matching User
-   * @throws com.chat.server.infrastructure.exception.EntityNotFoundException when the user does not exist
+   * @throws EntityNotFoundException when the user does not exist
    */
-  User getByUsername(String username);
+  User getByUsername(String username) throws EntityNotFoundException;
    
   /**
    * Authenticate an existing user and return a JWT access token.
@@ -25,10 +28,10 @@ public interface UserService {
    * @param username the username to authenticate
    * @param password the password to validate
    * @return a JWT access token for the authenticated user
-   * @throws com.chat.server.infrastructure.exception.AuthenticationFailedException when credentials are invalid
-   * @throws com.chat.server.infrastructure.exception.EntityNotFoundException when the user does not exist
+   * @throws AuthenticationFailedException when credentials are invalid
+   * @throws EntityNotFoundException when the user does not exist
    */
-  String authenticate(String username, String password);
+  String authenticate(String username, String password) throws AuthenticationFailedException, EntityNotFoundException;
 
   /**
    * Create a new external user and persist the domain user.
@@ -38,10 +41,10 @@ public interface UserService {
    *
    * @param user the user data to create
    * @return the created user with persisted fields populated
-   * @throws com.chat.server.infrastructure.exception.ConflictException when the username or email is already taken
+   * @throws ConflictException when the username or email is already taken
    * @throws com.chat.server.infrastructure.exception.InternalException when the external identity provider request fails
    */
-  User createUser(User user);
+  User createUser(User user) throws ConflictException;
 
   /**
    * Update a user's password in the Keycloak external identity store.

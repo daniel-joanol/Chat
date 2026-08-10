@@ -53,7 +53,7 @@ public class PublicController {
   @PostMapping("/login")
   public ResponseEntity<String> login(
       @Valid @RequestBody LoginRequest request
-  ) {
+  ) throws AuthenticationFailedException {
     try {
       String token = service.authenticate(request.username(), request.password());
       return ResponseEntity

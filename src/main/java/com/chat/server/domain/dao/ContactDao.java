@@ -1,5 +1,7 @@
 package com.chat.server.domain.dao;
 
+
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import java.util.UUID;
 
 import com.chat.server.domain.model.Contact;
@@ -31,9 +33,10 @@ public interface ContactDao {
    *
    * @param id the contact id
    * @return the matching Contact
-   * @throws com.chat.server.infrastructure.exception.EntityNotFoundException when the contact does not exist
+   * @throws EntityNotFoundException when the contact does not exist
    */
-  Contact getById(UUID id);
+  Contact getById(UUID id)
+      throws EntityNotFoundException;
 
   /**
    * Delete a contact relationship by identifier.

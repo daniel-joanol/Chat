@@ -1,5 +1,10 @@
 package com.chat.server.domain.service;
 
+
+import com.chat.server.infrastructure.exception.BadRequestException;
+import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.ForbiddenException;
 import java.util.UUID;
 
 import com.chat.server.domain.model.Contact;
@@ -14,18 +19,22 @@ public interface ContactService {
    *
    * @param contactUsername the username to add as a contact
    * @return the created Contact
-   * @throws com.chat.server.infrastructure.exception.BadRequestException when the user attempts to add themselves
-   * @throws com.chat.server.infrastructure.exception.ConflictException when the contact already exists
-   * @throws com.chat.server.infrastructure.exception.EntityNotFoundException when either user is not found
+   * @throws BadRequestException when the user attempts to add themselves
+   * @throws ConflictException when the contact already exists
+   * @throws EntityNotFoundException when either user is not found
    */
-  Contact addContact(String contactUsername);
+  Contact addContact(String contactUsername)
+      throws BadRequestException,
+             com.chat.server.infrastructure.exception.ConflictException,
+             com.chat.server.infrastructure.exception.EntityNotFoundException;
 
   /**
    * Delete a contact relationship belonging to the current authenticated user.
    *
    * @param id the identifier of the contact to delete
-   * @throws com.chat.server.infrastructure.exception.ForbiddenException when the contact does not belong to the current user
+   * @throws ForbiddenException when the contact does not belong to the current user
    */
-  void delete(UUID id);
+  void delete(UUID id)
+      throws ForbiddenException;
 
 }

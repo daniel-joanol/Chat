@@ -1,6 +1,6 @@
 package com.chat.server.domain.dao;
 
-/**
+import com.chat.server.infrastructure.exception.InternalException;/**
  * Port for reading application properties from the persistence layer.
  */
 public interface PropertyDao {
@@ -10,8 +10,9 @@ public interface PropertyDao {
    *
    * @param name the property name
    * @return the property value when the property exists
-   * @throws com.chat.server.infrastructure.exception.InternalException when the property is missing or cannot be resolved
+   * @throws InternalException when the property is missing or cannot be resolved
    */
-  String getValueByName(String name);
+  String getValueByName(String name)
+      throws InternalException;
 
 }
