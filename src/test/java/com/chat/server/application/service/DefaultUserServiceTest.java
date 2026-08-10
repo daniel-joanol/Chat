@@ -5,18 +5,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.chat.server.domain.dao.AccessManagementDao;
 import com.chat.server.domain.dao.UserDao;
+import com.chat.server.domain.enumerator.UserStatusEnum;
 import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
 import com.chat.server.domain.service.PropertyService;
@@ -67,6 +70,21 @@ class DefaultUserServiceTest {
     assertEquals(role.toString(), response.getRole().toString());
   }
 
+  @Test
+  void testAuthenticate_setsUserOnlineAndReturnsToken() {
+    user.setStatus(UserStatusEnum.OFFLINE);
+    when(userDao.getByUsername(anyString())).thenReturn(user);
+    when(accessManagementDao.authenticate(anyString(), anyString())).thenReturn("TOKEN");
+    when(userDao.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    String token = sut.authenticate("any", "pass");
+    assertEquals("TOKEN", token);
+
+    ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+    verify(userDao).save(captor.capture());
+    User saved = captor.getValue();
+    assertEquals(UserStatusEnum.ONLINE, saved.getStatus());
+  }
   @Test
   void testCreateUser_givenDuplicatedEmail_thenThrowConflictException() {
     when(userDao.existsByEmail(anyString())).thenReturn(true);

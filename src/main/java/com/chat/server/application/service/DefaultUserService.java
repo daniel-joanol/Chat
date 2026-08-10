@@ -9,6 +9,7 @@ import com.chat.server.domain.dao.AccessManagementDao;
 import com.chat.server.domain.dao.UserDao;
 import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
+import com.chat.server.domain.enumerator.UserStatusEnum;
 import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.service.PropertyService;
 import com.chat.server.domain.service.RoleService;
@@ -37,8 +38,11 @@ public class DefaultUserService implements UserService {
 
   @Override
   public String authenticate(String username, String password) {
-    userDao.getByUsername(username);
-    return accessManagementDao.authenticate(username, password);
+    User user = userDao.getByUsername(username);
+    String token = accessManagementDao.authenticate(username, password);
+    user.setStatus(UserStatusEnum.ONLINE);
+    userDao.save(user);
+    return token;
   }
 
   @Override
