@@ -12,6 +12,7 @@ import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.exception.BadRequestException;
 import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import com.chat.server.infrastructure.exception.ForbiddenException;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,8 @@ public class DefaultContactService implements ContactService {
   private final UserService userService;
   
   @Override
-  public Contact addContact(String contactUsername) {
+  public Contact addContact(String contactUsername)
+      throws BadRequestException, ConflictException, EntityNotFoundException {
     String username = secUtil.getUsername();
     if (contactUsername.equals(username)) {
       String message = String.format("User %s trying to add itself", username);
@@ -44,7 +46,8 @@ public class DefaultContactService implements ContactService {
   }
 
   @Override
-  public void delete(UUID id) {
+  public void delete(UUID id)
+      throws ForbiddenException, EntityNotFoundException {
     String username = secUtil.getUsername();
     Contact contact = dao.getById(id);
     boolean contactBelongsToAnotherUser = !contact.getUser().getUsername().equals(username);

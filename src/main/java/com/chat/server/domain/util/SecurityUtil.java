@@ -1,7 +1,8 @@
 package com.chat.server.domain.util;
 
-public interface SecurityUtil {
+
+import com.chat.server.infrastructure.exception.InternalException;public interface SecurityUtil {
   
-  String getUsername();
+  String getUsername() throws InternalException;
   
 }

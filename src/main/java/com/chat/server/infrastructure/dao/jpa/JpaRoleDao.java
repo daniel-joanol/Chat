@@ -19,7 +19,8 @@ public class JpaRoleDao implements RoleDao {
   private final RoleEntityMapper mapper;
   
   @Override
-  public Role getByName(UserRoleEnum name) {
+  public Role getByName(UserRoleEnum name)
+      throws InternalException {
     return repository.getByName(name)
         .map(mapper::toDomain)
         .orElseThrow(() -> {

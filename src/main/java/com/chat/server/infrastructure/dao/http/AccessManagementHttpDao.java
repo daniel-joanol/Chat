@@ -28,7 +28,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   private final AccessManagementHttpMapper mapper;
 
   @Override
-  public String authenticate(String username, String password) {
+  public String authenticate(String username, String password)
+      throws AuthenticationFailedException {
     HttpResponse<JsonNode> response = repository.login(username, password)
         .ifFailure(res -> {
           String message = String.format(
@@ -41,7 +42,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public void deleteUser(String jwt, UUID userId) {
+  public void deleteUser(String jwt, UUID userId)
+      throws InternalException {
     repository.deleteUser(jwt, userId)
         .ifFailure(res -> {
           String message = String.format(
@@ -53,7 +55,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public void createUser(String jwt, User user) {
+  public void createUser(String jwt, User user)
+      throws InternalException {
     KeycloakUserRequest userRequest = mapper.toUserRequest(user);
     repository.createUser(jwt, userRequest)
         .ifFailure(res -> {
@@ -66,7 +69,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public User getUser(String jwt, String username) {
+  public User getUser(String jwt, String username)
+      throws InternalException {
     KeycloakFiltersRequest filtersRequest = KeycloakFiltersRequest.singleUserFilter(username);
     HttpResponse<JsonNode> getUserResponse = repository.getUser(jwt, filtersRequest)
         .ifFailure(res -> {
@@ -81,7 +85,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public void addRole(String jwt, User user) {
+  public void addRole(String jwt, User user)
+      throws InternalException {
     KeycloakRoleRequest roleRequest = mapper.toRoleRequest(user.getRole());
     repository.addRoleToUser(jwt, List.of(roleRequest), user.getKeycloakId())
         .ifFailure(res -> {
@@ -94,7 +99,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public void updatePassword(String jwt, User user) {
+  public void updatePassword(String jwt, User user)
+      throws InternalException {
     KeycloakPasswordRequest passwordRequest = new KeycloakPasswordRequest(user.getPassword());
     repository.updatePassword(jwt, passwordRequest, user.getKeycloakId())
         .ifFailure(res -> {

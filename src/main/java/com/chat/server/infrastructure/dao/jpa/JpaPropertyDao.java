@@ -15,7 +15,8 @@ public class JpaPropertyDao implements PropertyDao {
   private final PropertyJpaRepository repository;
 
   @Override
-  public String getValueByName(String name) {
+  public String getValueByName(String name)
+      throws InternalException {
     return repository.getValueByName(name)
         .orElseThrow(() -> {
           String internalMessage = String.format("Property not found: %s", name);

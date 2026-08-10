@@ -21,6 +21,14 @@ This project uses **Hexagonal Architecture** (Ports and Adapters). Follow these 
 - JPA entity → `UserEntity`, `ContactEntity`
 - MapStruct mapper → `UserEntityMapper`, `UserDtoMapper`
 
+## Code comments and naming
+
+- Prefer expressive method and variable names over explanatory comments. Method names should describe the action and intent (for example: `createUser`, `authenticate`, `markUserOnline`). Variable names should clearly indicate purpose and type; avoid abbreviations that obscure meaning.
+- Only add comments when they add essential information that cannot be expressed via clear code: complex algorithm rationale, non-obvious domain rules, security considerations, or important cross-team agreements.
+- Do not leave commented-out code in the repository. Remove dead code instead of commenting it out.
+- Keep comments concise and focused on the "why" (motivation, constraints, trade-offs), not the "what" — the code (names, structure) should show what is happening.
+- Commit policy: require human review before committing changes. Avoid automated or accidental commits that introduce commented-out code or unclear naming.
+
 ## Models
 
 - Use `@Getter @Setter @Accessors(chain = true)` on domain models (fluent setters).
@@ -51,3 +59,9 @@ This project uses **Hexagonal Architecture** (Ports and Adapters). Follow these 
 ## Constants
 
 - Add new URL paths and role strings to `domain/constants/Constants.java` — never hardcode them in controllers.
+
+## Deprecated APIs
+
+- Avoid using deprecated JDK, library, or framework APIs in new code. Deprecated APIs are a maintenance and compatibility risk.
+- If using a deprecated API is temporarily unavoidable, add a short justification (TODO or comment) that references a tracker/ticket and a plan to replace it.
+- Prefer stable, supported alternatives and update usages proactively when upgrading dependencies.

@@ -1,10 +1,23 @@
 package com.chat.server.domain.dao;
 
+
+import com.chat.server.infrastructure.exception.InternalException;
 import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.model.Role;
 
+/**
+ * Port for role persistence operations.
+ */
 public interface RoleDao {
   
-  Role getByName(UserRoleEnum name);
+  /**
+   * Retrieve a role by its enumerated name.
+   *
+   * @param name the role name to search for
+   * @return the matching Role
+   * @throws InternalException when the role cannot be resolved
+   */
+  Role getByName(UserRoleEnum name)
+      throws InternalException;
 
 }
