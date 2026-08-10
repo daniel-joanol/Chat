@@ -118,7 +118,7 @@ com.chat.server
 │
 └── infrastructure/
     ├── controller/
-    │   ├── PublicController.java        ← POST /rest/v1/public/login, POST /rest/v1/public/user
+    │   ├── PublicController.java        ← POST /rest/v1/public/login, POST /rest/v1/public/logout, POST /rest/v1/public/user
     │   ├── ContactController.java       ← POST /rest/v1/contact, DELETE /rest/v1/contact/{id}
     │   ├── request/                     ← LoginRequest, UserRequest, ContactRequest (records)
     │   ├── response/                    ← UserResponse, ContactResponse
@@ -233,7 +233,20 @@ Authenticate a user and receive a JWT.
 - `400` — missing field
 - `401` — bad credentials (maps `EntityNotFoundException` → `AuthenticationFailedException`)
 
-**Flow:** verifies user exists in DB → calls Keycloak OIDC token endpoint → returns `access_token`.
+**Flow:** verifies user exists in DB → calls Keycloak OIDC token endpoint → sets user status to `ONLINE` → returns `access_token`.
+
+---
+
+#### POST `/rest/v1/public/logout`
+Mark the current authenticated user as offline.
+
+**Responses:**
+- `204` — logout successful
+- `5xx` — if the current authenticated user cannot be resolved from the security context
+
+**Notes:**
+- This endpoint obtains the current username from the JWT and updates the user's status to `OFFLINE`.
+- It is exposed under the public controller but still requires a valid authenticated user in the security context.
 
 ---
 
