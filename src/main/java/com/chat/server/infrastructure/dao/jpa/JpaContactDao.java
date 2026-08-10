@@ -29,7 +29,8 @@ public class JpaContactDao implements ContactDao {
   }
   
   @Override
-  public Contact getById(UUID id) {
+  public Contact getById(UUID id)
+      throws EntityNotFoundException {
     return repository.findById(id)
         .map(mapper::toDomain)
         .orElseThrow(() -> {

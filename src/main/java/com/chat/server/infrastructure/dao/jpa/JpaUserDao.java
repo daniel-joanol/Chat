@@ -38,7 +38,8 @@ public class JpaUserDao implements UserDao{
   }
 
   @Override
-  public User getById(UUID id) {
+  public User getById(UUID id)
+      throws EntityNotFoundException {
     return repository.findById(id)
         .map(mapper::toDomain)
         .orElseThrow(() -> {
@@ -48,7 +49,8 @@ public class JpaUserDao implements UserDao{
   }
   
   @Override
-  public User getByUsername(String username) {
+  public User getByUsername(String username)
+      throws EntityNotFoundException {
     return repository.getByUsername(username)
         .map(mapper::toDomain)
         .orElseThrow(() -> {

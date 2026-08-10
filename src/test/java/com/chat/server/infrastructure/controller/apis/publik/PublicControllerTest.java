@@ -1,9 +1,10 @@
-package com.chat.server.infrastructure.controller;
+package com.chat.server.infrastructure.controller.apis.publik;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,18 +15,21 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.model.UserFactory;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.UserService;
-import com.chat.server.infrastructure.controller.apis.publik.PublicController;
+import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.controller.mapper.UserDtoMapper;
 import com.chat.server.infrastructure.controller.request.LoginRequest;
 import com.chat.server.infrastructure.controller.request.UserRequest;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
+import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.InternalException;
 
 @ExtendWith(MockitoExtension.class)
 class PublicControllerTest {
@@ -39,6 +43,9 @@ class PublicControllerTest {
   @Mock
   private AuthenticationService authService;
 
+  @Mock
+  private SecurityUtil securityUtil;
+
   @InjectMocks
   private PublicController sut;
 
@@ -48,14 +55,14 @@ class PublicControllerTest {
   }
 
   @Test
-  void testLogin_returnValidResponse() {
+  void testLogin_returnValidResponse() throws AuthenticationFailedException, EntityNotFoundException {
     when(authService.authenticate(anyString(), anyString())).thenReturn("TOKEN");
     var response = sut.login(loginRequest);
     assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
   }
 
   @Test
-  void testLogin_whenEntityNotFoundExIsCaught_thenThrowAuthenticationFailedEx() {
+  void testLogin_whenEntityNotFoundExIsCaught_thenThrowAuthenticationFailedEx() throws AuthenticationFailedException, EntityNotFoundException {
     when(authService.authenticate(anyString(), anyString())).thenThrow(EntityNotFoundException.class);
     assertThrows(
         AuthenticationFailedException.class,
@@ -63,7 +70,7 @@ class PublicControllerTest {
   }
 
   @Test
-  void testCreateUser_returnValidResponse() {
+  void testCreateUser_returnValidResponse() throws ConflictException {
     var request = new UserRequest(null, null, null, null, null);
     var user = userMapper.toDomain(request);
     user = UserFactory.generateExternalUser(user);
@@ -71,6 +78,17 @@ class PublicControllerTest {
     var response = sut.createUser(request);
     assertEquals(HttpStatusCode.valueOf(201), response.getStatusCode());
     assertEquals(UserRoleEnum.USER, response.getBody().getRoleName());
+  }
+
+  @Test
+  void logout_callsServiceAndReturnsNoContent() throws InternalException {
+    when(securityUtil.getUsername()).thenReturn("testuser");
+
+    ResponseEntity<Void> resp = sut.logout();
+
+    assertEquals(204, resp.getStatusCode());
+    verify(securityUtil).getUsername();
+    verify(userService).logout("testuser");
   }
 
 }

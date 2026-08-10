@@ -12,7 +12,7 @@ import com.chat.server.infrastructure.exception.InternalException;
 public class JWTSecurityUtil implements SecurityUtil {
 
   @Override
-  public String getUsername() {
+  public String getUsername() throws InternalException {
     Jwt jwt = this.getJWT();
     return jwt.hasClaim("preferred_username")
         ? jwt.getClaimAsString("preferred_username")

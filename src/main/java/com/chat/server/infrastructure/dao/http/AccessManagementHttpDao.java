@@ -30,7 +30,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   private final AccessManagementHttpMapper mapper;
 
   @Override
-  public TokenInfo authenticate(String username, String password) {
+  public TokenInfo authenticate(String username, String password)
+      throws AuthenticationFailedException {
     HttpResponse<JsonNode> response = repository.login(username, password)
         .ifFailure(res -> {
           String message = String.format(
@@ -43,7 +44,7 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public void deleteUser(String jwt, UUID userId) {
+  public void deleteUser(String jwt, UUID userId) throws InternalException, InternalUserForbiddenException {
     HttpResponse<JsonNode> response = repository.deleteUser(jwt, userId);
     if (response.getStatus() == 403) {
       String message = String.format("Petition to delete user %s forbidden", userId);
@@ -58,7 +59,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public void createUser(String jwt, User user) {
+  public void createUser(String jwt, User user)
+      throws InternalException, InternalUserForbiddenException {
     KeycloakUserRequest userRequest = mapper.toUserRequest(user);
     HttpResponse<JsonNode> response = repository.createUser(jwt, userRequest);
     if (response.getStatus() == 403) {
@@ -74,7 +76,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public User getUser(String jwt, String username) {
+  public User getUser(String jwt, String username)
+      throws InternalException, InternalUserForbiddenException {
     KeycloakFiltersRequest filtersRequest = KeycloakFiltersRequest.singleUserFilter(username);
     HttpResponse<JsonNode> response = repository.getUser(jwt, filtersRequest);
     if (response.getStatus() == 403) {
@@ -92,7 +95,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public void addRole(String jwt, User user) {
+  public void addRole(String jwt, User user)
+      throws InternalException, InternalUserForbiddenException {
     KeycloakRoleRequest roleRequest = mapper.toRoleRequest(user.getRole());
     HttpResponse<JsonNode> response = repository.addRoleToUser(jwt, List.of(roleRequest), user.getKeycloakId());
     if (response.getStatus() == 403) {
@@ -108,7 +112,8 @@ public class AccessManagementHttpDao implements AccessManagementDao {
   }
 
   @Override
-  public void updatePassword(String jwt, User user) {
+  public void updatePassword(String jwt, User user)
+      throws InternalException, InternalUserForbiddenException {
     KeycloakPasswordRequest passwordRequest = new KeycloakPasswordRequest(user.getPassword());
     HttpResponse<JsonNode> response = repository.updatePassword(jwt, passwordRequest, user.getKeycloakId());
     if (response.getStatus() == 403) {

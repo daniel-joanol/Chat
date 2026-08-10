@@ -1,5 +1,7 @@
 package com.chat.server.application.service;
 
+
+import com.chat.server.infrastructure.exception.InternalException;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +28,8 @@ public class DefaultRoleService implements RoleService {
   }
 
   @Override
-  public Role getByName(UserRoleEnum name) {
+  public Role getByName(UserRoleEnum name)
+      throws InternalException {
     return dao.getByName(name)
         .setClientId(clientId);
   }

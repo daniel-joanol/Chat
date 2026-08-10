@@ -1,4 +1,4 @@
-package com.chat.server.infrastructure.controller;
+package com.chat.server.infrastructure.controller.apis.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,7 +20,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.chat.server.domain.model.Contact;
 import com.chat.server.domain.service.ContactService;
-import com.chat.server.infrastructure.controller.apis.internal.ContactController;
 import com.chat.server.infrastructure.controller.mapper.ContactDtoMapper;
 import com.chat.server.infrastructure.controller.request.ContactRequest;
 

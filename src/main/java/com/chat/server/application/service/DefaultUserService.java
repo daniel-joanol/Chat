@@ -1,5 +1,9 @@
 package com.chat.server.application.service;
 
+
+import com.chat.server.infrastructure.exception.AuthenticationFailedException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.InternalException;
 import java.util.List;
 import java.util.UUID;
 
@@ -9,6 +13,7 @@ import com.chat.server.domain.dao.AccessManagementDao;
 import com.chat.server.domain.dao.UserDao;
 import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
+import com.chat.server.domain.enumerator.UserStatusEnum;
 import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.util.RetryHttpFunction;
 import com.chat.server.domain.service.AuthenticationService;
@@ -29,7 +34,8 @@ public class DefaultUserService implements UserService {
   private final AuthenticationService authService;
 
   @Override
-  public User getByUsername(String username) {
+  public User getByUsername(String username)
+      throws EntityNotFoundException {
     return userDao.getByUsername(username);
   }
 
@@ -55,16 +61,24 @@ public class DefaultUserService implements UserService {
   }
 
   @Override
-  public void updatePassword(User user) {
-    var dbUser = userDao.getById(user.getId());
-    this.executeWithRetry(jwt -> {
-        accessManagementDao.updatePassword(jwt, dbUser);
-        return null;
-    });
+  public void logout(String username)
+      throws EntityNotFoundException {
+    User user = userDao.getByUsername(username);
+    user.setStatus(UserStatusEnum.OFFLINE);
+    userDao.save(user);
   }
 
   @Override
-  public User createUser(User user) {
+  public void updatePassword(User user)
+      throws EntityNotFoundException, InternalException, AuthenticationFailedException {
+    user = userDao.getById(user.getId());
+    String jwt = authService.getInternalUserJwt(false);
+    accessManagementDao.updatePassword(jwt, user);
+  }
+
+  @Override
+  public User createUser(User user)
+      throws ConflictException, InternalException, AuthenticationFailedException {
     this.validateEmail(user.getEmail());
     this.validateUsername(user.getUsername());
 
@@ -97,14 +111,16 @@ public class DefaultUserService implements UserService {
     return userDao.save(user);
   }
 
-  private void validateEmail(String email) {
+  private void validateEmail(String email)
+      throws ConflictException {
     if (userDao.existsByEmail(email)) {
       String message = String.format("Duplicated email: %s", email);
       throw new ConflictException(message);
     }
   }
 
-  private void validateUsername(String username) {
+  private void validateUsername(String username)
+      throws ConflictException {
     if (userDao.existsByUsername(username)) {
       String message = String.format("Duplicated username: %s", username);
       throw new ConflictException(message);

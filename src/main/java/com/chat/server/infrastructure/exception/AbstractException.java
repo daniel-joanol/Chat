@@ -3,7 +3,7 @@ package com.chat.server.infrastructure.exception;
 import lombok.Getter;
 
 @Getter
-public abstract class AbstractException extends RuntimeException {
+public abstract class AbstractException extends Exception {
   
   private final String externalMessage;
   private final String internalMessage;
