@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.chat.server.application.util.TimeUtil;
-import com.chat.server.infrastructure.exception.AbstractException;
+import com.chat.server.infrastructure.exception.CheckedException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -18,8 +18,8 @@ public class ErrorResponseFactory {
   public static ErrorResponse getResponse(Exception e, UUID traceId) {
     var timestamp = TimeUtil.now();
 
-    if  (e instanceof AbstractException) {
-      var absE = (AbstractException) e; 
+    if  (e instanceof CheckedException) {
+      var absE = (CheckedException) e; 
       return new ErrorResponse(timestamp, traceId, absE.getExternalMessage());
 
     } else if (e instanceof MethodArgumentNotValidException) {

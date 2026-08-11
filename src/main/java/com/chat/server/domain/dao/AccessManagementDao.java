@@ -3,8 +3,11 @@ package com.chat.server.domain.dao;
 
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.InternalException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
+
 import java.util.UUID;
 
+import com.chat.server.domain.model.TokenInfo;
 import com.chat.server.domain.model.User;
 
 /**
@@ -20,7 +23,7 @@ public interface AccessManagementDao {
    * @return a JWT access token if authentication succeeds
    * @throws AuthenticationFailedException when credentials are invalid
    */
-  String authenticate(String username, String password)
+  TokenInfo authenticate(String username, String password)
       throws AuthenticationFailedException;
 
   /**
@@ -31,7 +34,7 @@ public interface AccessManagementDao {
    * @throws InternalException when the external provider request fails
    */
   void createUser(String jwt, User user)
-      throws InternalException;
+      throws InternalException, InternalUserForbiddenException;
 
   /**
    * Retrieve a user from the external identity provider.
@@ -42,7 +45,7 @@ public interface AccessManagementDao {
    * @throws InternalException when the external provider request fails
    */
   User getUser(String jwt, String username)
-      throws InternalException;
+      throws InternalException, InternalUserForbiddenException;
 
   /**
    * Update the password of an existing external user.
@@ -52,7 +55,7 @@ public interface AccessManagementDao {
    * @throws InternalException when the external provider request fails
    */
   void updatePassword(String jwt, User user)
-      throws InternalException;
+      throws InternalException, InternalUserForbiddenException;
 
   /**
    * Assign a role to an existing external user.
@@ -63,7 +66,7 @@ public interface AccessManagementDao {
    * @throws InternalException when the external provider request fails
    */
   void addRole(String jwt, User user)
-      throws InternalException;
+      throws InternalException, InternalUserForbiddenException;
 
   /**
    * Delete a user from the external identity provider.
@@ -73,6 +76,6 @@ public interface AccessManagementDao {
    * @throws InternalException when the external provider request fails
    */
   void deleteUser(String jwt, UUID userId)
-      throws InternalException;
+      throws InternalException, InternalUserForbiddenException;
 
 }

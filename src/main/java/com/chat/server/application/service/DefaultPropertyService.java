@@ -15,13 +15,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class DefaultPropertyService implements PropertyService {
-  
+
   private final PropertyDao dao;
   private final EncryptUtil encryptUtil;
 
   @Override
-  public User getDefaultInternalUser()
-      throws InternalException {
+  public User getDefaultInternalUser() {
     String username = this.getDefaultInternalUsername();
     String pass = this.getDefaultInternalUserPass();
     return UserFactory.generateDefaultInternalUser(username, pass);

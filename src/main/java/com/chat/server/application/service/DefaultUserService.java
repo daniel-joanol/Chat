@@ -1,9 +1,5 @@
 package com.chat.server.application.service;
 
-
-import com.chat.server.infrastructure.exception.AuthenticationFailedException;
-import com.chat.server.infrastructure.exception.EntityNotFoundException;
-import com.chat.server.infrastructure.exception.InternalException;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,129 +7,138 @@ import org.springframework.stereotype.Service;
 
 import com.chat.server.domain.dao.AccessManagementDao;
 import com.chat.server.domain.dao.UserDao;
+import com.chat.server.domain.enumerator.UserStatusEnum;
 import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
-import com.chat.server.domain.enumerator.UserStatusEnum;
-import com.chat.server.domain.service.UserService;
-import com.chat.server.domain.service.PropertyService;
+import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.RoleService;
+import com.chat.server.domain.service.UserService;
+import com.chat.server.domain.util.RetryHttpFunction;
+import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class DefaultUserService implements UserService {
-  
-  private final AccessManagementDao accessManagementDao;
-  private final UserDao userDao;
-  private final PropertyService propertyService;
-  private final RoleService roleService;
 
-  @Override
-  public User getByUsername(String username)
-      throws EntityNotFoundException {
-    return userDao.getByUsername(username);
-  }
+ private final AccessManagementDao accessManagementDao;
+ private final UserDao userDao;
+ private final RoleService roleService;
+ private final AuthenticationService authService;
 
-  @Override
-  public List<User> getIncompleteUsers() {
-    return userDao.getIncompleteUsers();
-  }
+ @Override
+ public User getByUsername(String username)
+     throws EntityNotFoundException {
+   return userDao.getByUsername(username);
+ }
 
-  @Override
-  public String authenticate(String username, String password)
-      throws AuthenticationFailedException,
-             com.chat.server.infrastructure.exception.EntityNotFoundException {
-    User user = userDao.getByUsername(username);
-    String token = accessManagementDao.authenticate(username, password);
-    user.setStatus(UserStatusEnum.ONLINE);
-    userDao.save(user);
-    return token;
-  }
+ @Override
+ public List<User> getIncompleteUsers() {
+   return userDao.getIncompleteUsers();
+ }
 
-  @Override
-  public void deleteUser(String username)
-      throws EntityNotFoundException,
-             com.chat.server.infrastructure.exception.InternalException,
-             com.chat.server.infrastructure.exception.AuthenticationFailedException {
-    User user = userDao.getByUsername(username);
-    this.deleteUser(user);
-  }
-  
-  @Override
-  public void deleteUser(User user)
-      throws InternalException,
-             com.chat.server.infrastructure.exception.AuthenticationFailedException {
-    String jwt = this.authenticateInternalUser();
-    userDao.delete(user.getId());
-    accessManagementDao.deleteUser(jwt, user.getKeycloakId());
-  }
+ @Override
+ public void deleteUser(String username)
+     throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
+   User user = userDao.getByUsername(username);
+   this.deleteUser(user);
+ }
 
-  @Override
-  public void logout(String username)
-      throws EntityNotFoundException {
-    User user = userDao.getByUsername(username);
-    user.setStatus(UserStatusEnum.OFFLINE);
-    userDao.save(user);
-  }
+ @Override
+ @Transactional
+ public void deleteUser(User user)
+     throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
+   userDao.delete(user.getId());
+   this.executeWithRetry(jwt -> {
+     accessManagementDao.deleteUser(jwt, user.getKeycloakId());
+     return null;
+   });
+ }
 
-  @Override
-  public void updatePassword(User user)
-      throws EntityNotFoundException,
-             com.chat.server.infrastructure.exception.InternalException,
-             com.chat.server.infrastructure.exception.AuthenticationFailedException {
-    user = userDao.getById(user.getId());
-    String jwt = this.authenticateInternalUser();
-    accessManagementDao.updatePassword(jwt, user);
-  }
+ @Override
+ public void logout(String username)
+     throws EntityNotFoundException {
+   User user = userDao.getByUsername(username);
+   user.setStatus(UserStatusEnum.OFFLINE);
+   userDao.save(user);
+ }
 
-  @Override
-  public User createUser(User user)
-      throws ConflictException,
-             com.chat.server.infrastructure.exception.InternalException,
-             com.chat.server.infrastructure.exception.AuthenticationFailedException {
-    this.validateEmail(user.getEmail());
-    this.validateUsername(user.getUsername());
-    String jwt = this.authenticateInternalUser();
-    String password = user.getPassword();
-    Role role = roleService.getByName(user.getRole().getName());
-    user.setRole(role);
-    accessManagementDao.createUser(jwt, user);
-    user = userDao.save(user).setRole(role);
-    UUID keycloakId = accessManagementDao.getUser(jwt, user.getUsername())
-        .getKeycloakId();
-    user.setKeycloakId(keycloakId);
-    user = userDao.save(user).setRole(role)
-      .setRole(role)
-      .setPassword(password);
-    accessManagementDao.addRole(jwt, user);
-    accessManagementDao.updatePassword(jwt, user);
-    user.setIsCreationCompleted(true);
-    return userDao.save(user).setRole(role);
-  }
+ @Override
+ public void updatePassword(User user)
+     throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
+   User dbUser = userDao.getById(user.getId());
+   // Retry with admin JWT on InternalUserForbiddenException
+   this.executeWithRetry(jwt -> {
+     accessManagementDao.updatePassword(jwt, dbUser);
+     return null;
+   });
+ }
 
-  private String authenticateInternalUser()
-      throws AuthenticationFailedException,
-             com.chat.server.infrastructure.exception.InternalException {
-    User defaultInternalUser = propertyService.getDefaultInternalUser();
-    return accessManagementDao.authenticate(defaultInternalUser.getUsername(), defaultInternalUser.getPassword());
-  }
+ @Override
+ public User createUser(User user)
+     throws ConflictException, InternalUserForbiddenException, AuthenticationFailedException {
+   this.validateEmail(user.getEmail());
+   this.validateUsername(user.getUsername());
 
-  private void validateEmail(String email)
-      throws ConflictException {
-    if (userDao.existsByEmail(email)) {
-      String message = String.format("Duplicated email: %s", email);
-      throw new ConflictException(message);
-    }
-  }
+   Role role = roleService.getByName(user.getRole().getName());
+   user.setRole(role);
 
-  private void validateUsername(String username)
-      throws ConflictException {
-    if (userDao.existsByUsername(username)) {
-      String message = String.format("Duplicated username: %s", username);
-      throw new ConflictException(message);
-    }
-  }
+   this.executeWithRetry(jwt -> {
+     accessManagementDao.createUser(jwt, user);
+     return null;
+   });
+   var dbUser = userDao.save(user);
+
+   UUID keycloakId = this.executeWithRetry(jwt -> {
+     return accessManagementDao.getUser(jwt, user.getUsername());
+   }).getKeycloakId();
+   dbUser.setKeycloakId(keycloakId);
+   dbUser = userDao.save(dbUser);
+
+   this.executeWithRetry(jwt -> {
+     accessManagementDao.addRole(jwt, user);
+     return null;
+   });
+
+   this.executeWithRetry(jwt -> {
+     accessManagementDao.updatePassword(jwt, user);
+     return null;
+   });
+
+   user.setIsCreationCompleted(true);
+   return userDao.save(user);
+ }
+
+ private void validateEmail(String email)
+     throws ConflictException {
+   if (userDao.existsByEmail(email)) {
+     String message = String.format("Duplicated email: %s", email);
+     throw new ConflictException(message);
+   }
+ }
+
+ private void validateUsername(String username)
+     throws ConflictException {
+   if (userDao.existsByUsername(username)) {
+     String message = String.format("Duplicated username: %s", username);
+     throw new ConflictException(message);
+   }
+ }
+
+ private <T> T executeWithRetry(RetryHttpFunction<T> function)
+     throws AuthenticationFailedException, InternalUserForbiddenException {
+   String jwt = authService.getInternalUserJwt(false);
+   try {
+     return function.execute(jwt);
+   } catch (InternalUserForbiddenException e) {
+     jwt = authService.getInternalUserJwt(true);
+     return function.execute(jwt);
+   }
+ }
 
 }

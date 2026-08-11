@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.chat.server.domain.dao.UserDao;
+import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import com.chat.server.infrastructure.repository.jpa.UserJpaRepository;
@@ -39,30 +40,34 @@ public class JpaUserDao implements UserDao{
   @Override
   public User getById(UUID id)
       throws EntityNotFoundException {
-    return repository.findById(id)
-        .map(mapper::toDomain)
-        .orElseThrow(() -> {
-          String message = String.format("User not found: %s", id);
-          throw new EntityNotFoundException(message);
-        });
+    var entity = repository.findById(id);
+    if (entity.isPresent()) {
+      return mapper.toDomain(entity.get());
+    }
+
+    String message = String.format("User not found: %s", id);
+    throw new EntityNotFoundException(message);
   }
-  
+
   @Override
   public User getByUsername(String username)
       throws EntityNotFoundException {
-    return repository.getByUsername(username)
-        .map(mapper::toDomain)
-        .orElseThrow(() -> {
-          String message = String.format("Username not found: %s", username);
-          throw new EntityNotFoundException(message);
-        });
+    var entity = repository.getByUsername(username);
+    if (entity.isPresent()) {
+      return mapper.toDomain(entity.get());
+    }
+
+    String message = String.format("Username not found: %s", username);
+    throw new EntityNotFoundException(message);
   }
 
   @Override
   public User save(User user) {
+    Role role = user.getRole();
     UserEntity entity = mapper.toEntity(user);
     entity = repository.saveAndFlush(entity);
-    return mapper.toDomain(entity);
+    user = mapper.toDomain(entity);
+    return user.setRole(role);
   }
 
   @Override

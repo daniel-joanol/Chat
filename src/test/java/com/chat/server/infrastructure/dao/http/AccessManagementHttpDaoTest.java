@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.dao.http;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -7,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
@@ -20,10 +20,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.chat.server.domain.enumerator.UserRoleEnum;
+import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
 import com.chat.server.infrastructure.dao.http.mapper.AccessManagementHttpMapper;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.InternalException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 import com.chat.server.infrastructure.repository.http.KeycloakHttpRepository;
 
 import kong.unirest.core.HttpResponse;
@@ -40,7 +43,8 @@ class AccessManagementHttpDaoTest {
   private String jwt = "JWT";
   private JsonNode errorNode = new JsonNode("{\"message\": \"some error\"}");
   private UUID userId = UUID.randomUUID();
-  private User user = generator.nextObject(User.class);
+  private User user;
+  private Role role;
 
   private AccessManagementHttpMapper mapper = Mappers.getMapper(AccessManagementHttpMapper.class);
   
@@ -56,24 +60,30 @@ class AccessManagementHttpDaoTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(sut, "mapper", mapper);
+    role = new Role()
+        .setName(UserRoleEnum.USER)
+        .setClientId(UUID.randomUUID())
+        .setKeycloakId(UUID.randomUUID());
+    user = generator.nextObject(User.class)
+        .setRole(role);
   }
 
   @Test
-  void testLogin_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
-    JsonNode node = new JsonNode("{\"access_token\": \"TOKEN\"}");
-    
+  void testLogin_whenResponseIsSuccess_thenReturnTokenInfo() throws AuthenticationFailedException {
+    JsonNode node = new JsonNode("{\"access_token\": \"TOKEN\", \"expires_in\": 3600}");
+
     when(repository.login(anyString(), any())).thenReturn(mockedResponse);
-    when(mockedResponse.ifFailure(any())).thenReturn(mockedResponse); 
+    when(mockedResponse.isSuccess()).thenReturn(true);
     when(mockedResponse.getBody()).thenReturn(node);
 
-    sut.authenticate(username, password);
-    verify(repository).login(anyString(), any());
+    var tokenInfo = sut.authenticate(username, password);
+    assertEquals("TOKEN", tokenInfo.accessToken());
   }
 
   @Test
-  void testLogin_whenReponseIsFailure_thenThrowException() {
+  void testLogin_whenResponseIsFailure_thenThrowException() {
     when(repository.login(anyString(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    this.mockLoginFailure();
     
     assertThrows(
         AuthenticationFailedException.class, 
@@ -82,8 +92,9 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testDeleteUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testDeleteUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws InternalException, InternalUserForbiddenException {
     when(repository.deleteUser(anyString(), any())).thenReturn(mockedResponse);
+    mockHttpSuccess();
     sut.deleteUser(jwt, userId);
     verify(repository).deleteUser(anyString(), any());
   }
@@ -91,16 +102,16 @@ class AccessManagementHttpDaoTest {
   @Test
   void testDeleteUser_whenResponseIsFailure_thenThrowException() {
     when(repository.deleteUser(anyString(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    mockHttpFailure();
     
     assertThrows(
         InternalException.class, 
-        () -> sut.deleteUser(anyString(), any())
+        () -> sut.deleteUser(jwt, userId)
     );
   }
 
   @Test
-  void testGetUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testGetUser_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws InternalException, InternalUserForbiddenException {
     JsonNode node = new JsonNode(
         String.format(
             "[{\"id\": \"%s\", \"username\": \"%s\", \"firstName\":\"bla\", \"email\": \"a@com\", \"enabled\": true}]",
@@ -108,7 +119,7 @@ class AccessManagementHttpDaoTest {
     ));
 
     when(repository.getUser(anyString(), any())).thenReturn(mockedResponse);
-    when(mockedResponse.ifFailure(any())).thenReturn(mockedResponse);
+    mockHttpSuccess();
     when(mockedResponse.getBody()).thenReturn(node);
 
     sut.getUser(jwt, username);
@@ -118,17 +129,18 @@ class AccessManagementHttpDaoTest {
   @Test
   void testGetUser_whenResponseIsFailure_thenThrowException() {
     when(repository.getUser(anyString(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    mockHttpFailure();
     
     assertThrows(
         InternalException.class,
-        () -> sut.getUser(anyString(), any())
+        () -> sut.getUser(jwt, username)
     );
   }
 
   @Test
-  void testAddRole_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testAddRole_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws InternalException, InternalUserForbiddenException {
     when(repository.addRoleToUser(anyString(), any(), any())).thenReturn(mockedResponse);
+    mockHttpSuccess();
     sut.addRole(jwt, user);
     verify(repository).addRoleToUser(anyString(), any(), any());
   }
@@ -136,7 +148,7 @@ class AccessManagementHttpDaoTest {
   @Test
   void testAddRole_whenResponseIsFailure_thenThrowException() {
     when(repository.addRoleToUser(anyString(), any(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    mockHttpFailure();
     
     assertThrows(
         InternalException.class,
@@ -145,16 +157,17 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testUpdatePassword_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() {
+  void testUpdatePassword_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws InternalException, InternalUserForbiddenException {
     when(repository.updatePassword(anyString(), any(), any())).thenReturn(mockedResponse);
+    mockHttpSuccess();
     sut.updatePassword(jwt, user);
     verify(repository).updatePassword(anyString(), any(), any());
   }
 
   @Test
-  void testUpdatePassowrd_whenResponseIsFailue_thenThrowException() {
+  void testUpdatePassword_whenResponseIsFailure_thenThrowException() {
     when(repository.updatePassword(anyString(), any(), any())).thenReturn(mockedResponse);
-    this.mockIfFailureTrue();
+    mockHttpFailure();
 
     assertThrows(
         InternalException.class,
@@ -162,13 +175,21 @@ class AccessManagementHttpDaoTest {
     );
   }
 
-  private void mockIfFailureTrue() {
-    when(mockedResponse.ifFailure(any())).thenAnswer(invocation -> {
-      Consumer<HttpResponse<JsonNode>> c = invocation.getArgument(0);
-      c.accept(mockedResponse);
-      return mockedResponse;
-    });
-    when(mockedResponse.getStatus()).thenReturn(400);
+  private void mockHttpSuccess() {
+    when(mockedResponse.getStatus()).thenReturn(200);
+    when(mockedResponse.isSuccess()).thenReturn(true);
+  }
+
+  private void mockHttpFailure() {
+    when(mockedResponse.getStatus()).thenReturn(500);
+    when(mockedResponse.isSuccess()).thenReturn(false);
+    when(mockedResponse.getBody()).thenReturn(errorNode);
+  }
+
+  private void mockLoginFailure() {
+    // simulate a failed HTTP response: not successful and specific status/body
+    when(mockedResponse.getStatus()).thenReturn(401);
+    when(mockedResponse.isSuccess()).thenReturn(false);
     when(mockedResponse.getBody()).thenReturn(errorNode);
   }
 

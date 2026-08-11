@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.dao.http.mapper;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.mapstruct.Mapper;
@@ -8,6 +9,7 @@ import org.mapstruct.Named;
 
 import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.model.Role;
+import com.chat.server.domain.model.TokenInfo;
 import com.chat.server.domain.model.User;
 import com.chat.server.infrastructure.dao.http.request.KeycloakRoleRequest;
 import com.chat.server.infrastructure.dao.http.request.KeycloakUserRequest;
@@ -39,6 +41,15 @@ public interface AccessManagementHttpMapper {
         .setLastName(json.has("lastName") ? json.getString("lastName") : "")
         .setEmail(json.getString("email"))
         .setIsEnabled(json.getBoolean("enabled"));
+  }
+
+  default TokenInfo toTokenInfo(JSONObject json) {
+    String accessToken = json.getString("access_token");
+    int expiresIn = json.getInt("expires_in");
+    return TokenInfo.builder()
+        .accessToken(accessToken)
+        .expiresAt(LocalDateTime.now().plusSeconds(expiresIn))
+        .build();
   }
 
 }

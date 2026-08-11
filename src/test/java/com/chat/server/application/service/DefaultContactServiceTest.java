@@ -24,6 +24,7 @@ import com.chat.server.domain.service.UserService;
 import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.exception.BadRequestException;
 import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import com.chat.server.infrastructure.exception.ForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,9 +58,10 @@ class DefaultContactServiceTest {
   @Test
   void testAddContact_whenUserAddingSelf_thenThrowBadRequestEx() {
     when(secUtil.getUsername()).thenReturn(user.getUsername());
+    var username = user.getUsername();
     assertThrows(
         BadRequestException.class,
-        () -> sut.addContact(user.getUsername())
+        () -> sut.addContact(username)
     );
   }
 
@@ -67,14 +69,15 @@ class DefaultContactServiceTest {
   void testAddContact_whenContactExists_thenThrowConflictEx() {
     when(secUtil.getUsername()).thenReturn(user.getUsername());
     when(dao.exists(anyString(), anyString())).thenReturn(true);
+    var username = contact.getFriend().getUsername();
     assertThrows(
         ConflictException.class, 
-      () -> sut.addContact(contact.getFriend().getUsername())
+      () -> sut.addContact(username)
     );
   }
 
   @Test
-  void testAddContact_verifyDaoIsCalled() {
+  void testAddContact_verifyDaoIsCalled() throws EntityNotFoundException, BadRequestException, ConflictException {
     when(secUtil.getUsername()).thenReturn(user.getUsername());
     when(dao.exists(anyString(), anyString())).thenReturn(false);
     when(userService.getByUsername(anyString())).thenReturn(user);
@@ -83,7 +86,7 @@ class DefaultContactServiceTest {
   }
 
   @Test
-  void testDelete_whenContactBelongsToAnotherUser_thenThrowForbiddenEx() {
+  void testDelete_whenContactBelongsToAnotherUser_thenThrowForbiddenEx() throws EntityNotFoundException {
     when(secUtil.getUsername()).thenReturn(user.getUsername());
     when(dao.getById(any())).thenReturn(contact);
     assertThrows(
@@ -93,7 +96,7 @@ class DefaultContactServiceTest {
   }
 
   @Test
-  void testDelete_verifyDaoIsCalled() {
+  void testDelete_verifyDaoIsCalled() throws ForbiddenException, EntityNotFoundException {
     when(secUtil.getUsername()).thenReturn(contact.getUser().getUsername());
     when(dao.getById(any())).thenReturn(contact);
     sut.delete(id);

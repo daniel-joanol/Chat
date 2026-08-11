@@ -17,6 +17,10 @@ import com.chat.server.domain.service.ContactService;
 import com.chat.server.infrastructure.controller.mapper.ContactDtoMapper;
 import com.chat.server.infrastructure.controller.request.ContactRequest;
 import com.chat.server.infrastructure.controller.response.ContactResponse;
+import com.chat.server.infrastructure.exception.BadRequestException;
+import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.ForbiddenException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -53,7 +57,7 @@ public class ContactController {
   @PostMapping
   public ResponseEntity<ContactResponse> add(
       @RequestBody @Valid ContactRequest request
-  ) {
+  ) throws BadRequestException, ConflictException, EntityNotFoundException {
     var contact = service.addContact(request.contactUsername());
     var response = mapper.toResponse(contact);
     return ResponseEntity
@@ -70,7 +74,7 @@ public class ContactController {
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(
       @PathVariable UUID id
-  ) {
+  ) throws ForbiddenException, EntityNotFoundException {
     service.delete(id);
     return ResponseEntity
         .noContent()

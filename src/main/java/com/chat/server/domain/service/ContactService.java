@@ -24,17 +24,16 @@ public interface ContactService {
    * @throws EntityNotFoundException when either user is not found
    */
   Contact addContact(String contactUsername)
-      throws BadRequestException,
-             com.chat.server.infrastructure.exception.ConflictException,
-             com.chat.server.infrastructure.exception.EntityNotFoundException;
+      throws BadRequestException, ConflictException, EntityNotFoundException;
 
   /**
    * Delete a contact relationship belonging to the current authenticated user.
    *
    * @param id the identifier of the contact to delete
    * @throws ForbiddenException when the contact does not belong to the current user
+   * @throws EntityNotFoundException when either user is not found
    */
   void delete(UUID id)
-      throws ForbiddenException;
+      throws ForbiddenException, EntityNotFoundException;
 
 }

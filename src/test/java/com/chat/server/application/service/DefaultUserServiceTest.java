@@ -3,9 +3,12 @@ package com.chat.server.application.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
@@ -22,9 +25,13 @@ import com.chat.server.domain.dao.UserDao;
 import com.chat.server.domain.enumerator.UserStatusEnum;
 import com.chat.server.domain.model.Role;
 import com.chat.server.domain.model.User;
+import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.PropertyService;
 import com.chat.server.domain.service.RoleService;
+import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.ConflictException;
+import com.chat.server.infrastructure.exception.EntityNotFoundException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultUserServiceTest {
@@ -45,6 +52,9 @@ class DefaultUserServiceTest {
   private PropertyService propertyService;
 
   @Mock
+  private AuthenticationService authService;
+
+  @Mock
   private RoleService roleService;
 
   @InjectMocks
@@ -57,37 +67,53 @@ class DefaultUserServiceTest {
   }
 
   @Test
-  void testCreateUser_returnExternalUser() {    
+  void testDeleteUser_givenForbiddenEx_thenRetryWithAdminJwt() throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
+    when(userDao.getByUsername(anyString())).thenReturn(user);
+    when(authService.getInternalUserJwt(anyBoolean())).thenReturn("TOKEN");
+    doThrow(new InternalUserForbiddenException("Forbidden"))
+        .doNothing()
+        .when(accessManagementDao).deleteUser(anyString(), any());
+    sut.deleteUser(user.getUsername());
+    verify(accessManagementDao, times(2)).deleteUser(anyString(), any());
+  }
+
+  @Test
+  void testUpdatePassword_givenForbiddenEx_thenRetryWithAdminJwt() throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
+    when(userDao.getById(any())).thenReturn(user);
+    when(authService.getInternalUserJwt(anyBoolean())).thenReturn("TOKEN");
+    doThrow(new InternalUserForbiddenException("Forbidden"))
+        .doNothing()
+        .when(accessManagementDao).updatePassword(anyString(), any());
+    sut.updatePassword(user);
+    verify(accessManagementDao, times(2)).updatePassword(anyString(), any());
+  }
+
+  @Test
+  void testCreateUser_givenForbiddenEx_thenReturnExternalUser() throws ConflictException, InternalUserForbiddenException, AuthenticationFailedException {    
     when(userDao.existsByEmail(anyString())).thenReturn(false);
     when(userDao.existsByUsername(anyString())).thenReturn(false);
-    when(propertyService.getDefaultInternalUser()).thenReturn(user);
-    when(accessManagementDao.authenticate(anyString(), anyString())).thenReturn("TOKEN");
+    when(authService.getInternalUserJwt(anyBoolean())).thenReturn("TOKEN");
     when(roleService.getByName(any())).thenReturn(role);
+    doThrow(new InternalUserForbiddenException("Forbidden"))
+        .doNothing()
+        .when(accessManagementDao).createUser(anyString(), any());
+    when(accessManagementDao.getUser(anyString(), anyString()))
+        .thenThrow(new InternalUserForbiddenException("Forbidden"))
+        .thenReturn(user);
+    doThrow(new InternalUserForbiddenException("Forbidden"))
+        .doNothing()
+        .when(accessManagementDao).addRole(anyString(), any());
+    doThrow(new InternalUserForbiddenException("Forbidden"))
+        .doNothing()
+        .when(accessManagementDao).updatePassword(anyString(), any());
     when(userDao.save(any())).thenReturn(user);
-    when(accessManagementDao.getUser(anyString(), anyString())).thenReturn(user);
 
     var response = sut.createUser(user);
     assertEquals(role.toString(), response.getRole().toString());
   }
 
   @Test
-  void testAuthenticate_setsUserOnlineAndReturnsToken() {
-    user.setStatus(UserStatusEnum.OFFLINE);
-    when(userDao.getByUsername(anyString())).thenReturn(user);
-    when(accessManagementDao.authenticate(anyString(), anyString())).thenReturn("TOKEN");
-    when(userDao.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-    String token = sut.authenticate("any", "pass");
-    assertEquals("TOKEN", token);
-
-    ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-    verify(userDao).save(captor.capture());
-    User saved = captor.getValue();
-    assertEquals(UserStatusEnum.ONLINE, saved.getStatus());
-  }
-
-  @Test
-  void testLogout_setsUserOfflineAndSaves() {
+  void testLogout_setsUserOfflineAndSaves() throws EntityNotFoundException {
     user.setStatus(UserStatusEnum.ONLINE);
     when(userDao.getByUsername(anyString())).thenReturn(user);
     when(userDao.save(any())).thenAnswer(invocation -> invocation.getArgument(0));

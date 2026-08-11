@@ -8,12 +8,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.chat.server.infrastructure.exception.AbstractException;
+import com.chat.server.infrastructure.exception.CheckedException;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.BadRequestException;
 import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
 import com.chat.server.infrastructure.exception.ForbiddenException;
+import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 import com.chat.server.infrastructure.exception.InternalException;
 import com.chat.server.infrastructure.exception.response.ErrorResponse;
 import com.chat.server.infrastructure.exception.response.ErrorResponseFactory;
@@ -65,8 +66,8 @@ public class GlobalDefaultExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
   }
 
-  @ExceptionHandler(InternalException.class)
-  public ResponseEntity<ErrorResponse> handleInternalException(InternalException e, HttpServletRequest req) {
+  @ExceptionHandler({InternalException.class, InternalUserForbiddenException.class})
+  public ResponseEntity<ErrorResponse> handleInternalException(CheckedException e, HttpServletRequest req) {
     ErrorResponse response = this.generateResponse(e);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
   }
@@ -84,7 +85,7 @@ public class GlobalDefaultExceptionHandler {
     return ErrorResponseFactory.getResponse(e, traceId);
   }
 
-  private ErrorResponse generateResponse(AbstractException e) {
+  private ErrorResponse generateResponse(CheckedException e) {
     UUID traceId = UUID.randomUUID();
     String message = String.format("[%s] %s", traceId, e.getInternalMessage());
     log.error(message, e);
