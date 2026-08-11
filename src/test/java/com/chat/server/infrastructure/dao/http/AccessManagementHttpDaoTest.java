@@ -1,5 +1,6 @@
 package com.chat.server.infrastructure.dao.http;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -7,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
@@ -69,15 +69,15 @@ class AccessManagementHttpDaoTest {
   }
 
   @Test
-  void testLogin_whenResponseIsSuccess_thenVerifyRepositoryIsCalled() throws AuthenticationFailedException {
+  void testLogin_whenResponseIsSuccess_thenReturnTokenInfo() throws AuthenticationFailedException {
     JsonNode node = new JsonNode("{\"access_token\": \"TOKEN\", \"expires_in\": 3600}");
 
     when(repository.login(anyString(), any())).thenReturn(mockedResponse);
-    when(mockedResponse.ifFailure(any())).thenReturn(mockedResponse);
+    when(mockedResponse.isSuccess()).thenReturn(true);
     when(mockedResponse.getBody()).thenReturn(node);
 
-    sut.authenticate(username, password);
-    verify(repository).login(anyString(), any());
+    var tokenInfo = sut.authenticate(username, password);
+    assertEquals("TOKEN", tokenInfo.accessToken());
   }
 
   @Test
@@ -187,12 +187,9 @@ class AccessManagementHttpDaoTest {
   }
 
   private void mockLoginFailure() {
-    when(mockedResponse.ifFailure(any())).thenAnswer(invocation -> {
-      Consumer<HttpResponse<JsonNode>> consumer = invocation.getArgument(0);
-      consumer.accept(mockedResponse);
-      return mockedResponse;
-    });
+    // simulate a failed HTTP response: not successful and specific status/body
     when(mockedResponse.getStatus()).thenReturn(401);
+    when(mockedResponse.isSuccess()).thenReturn(false);
     when(mockedResponse.getBody()).thenReturn(errorNode);
   }
 

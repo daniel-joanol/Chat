@@ -71,9 +71,12 @@ public class DefaultUserService implements UserService {
  @Override
  public void updatePassword(User user)
      throws EntityNotFoundException, InternalUserForbiddenException, AuthenticationFailedException {
-   user = userDao.getById(user.getId());
-   String jwt = authService.getInternalUserJwt(false);
-   accessManagementDao.updatePassword(jwt, user);
+   User dbUser = userDao.getById(user.getId());
+   // Retry with admin JWT on InternalUserForbiddenException
+   this.executeWithRetry(jwt -> {
+     accessManagementDao.updatePassword(jwt, dbUser);
+     return null;
+   });
  }
 
  @Override

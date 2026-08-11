@@ -87,7 +87,7 @@ class PublicControllerTest {
 
     ResponseEntity<Void> resp = sut.logout();
 
-    assertEquals(204, resp.getStatusCode());
+    assertEquals(HttpStatusCode.valueOf(204), resp.getStatusCode());
     verify(securityUtil).getUsername();
     verify(userService).logout("testuser");
   }
