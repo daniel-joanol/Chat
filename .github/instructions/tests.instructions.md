@@ -70,6 +70,12 @@ For the happy path (no special condition): `test<Method>_return<Result>`.
 - Assert `response.getStatusCode()` against `HttpStatusCode.valueOf(NNN)`.
 - Hardcode minimal request objects inline (Java records, e.g. `new ContactRequest("username")`).
 
+## WebSocket tests
+
+- Test STOMP controllers as unit tests: mock the domain service and `SimpMessagingTemplate`, use the real MapStruct mapper, and verify `convertAndSendToUser` targets the recipient queue.
+- Test `JwtStompAuthenticationInterceptor` independently for a missing or invalid `CONNECT` token, valid authentication, forbidden sends, and forbidden subscriptions.
+- Test `GlobalWebSocketExceptionHandler` directly; verify that its response has a safe external message and is intended for the sender's error queue.
+
 ## JPA DAO tests (`infrastructure/dao/jpa/`)
 
 - Place test class in package `com.chat.server.infrastructure.dao.http.jpa` (existing convention).

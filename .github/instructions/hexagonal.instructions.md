@@ -37,7 +37,7 @@ This project uses **Hexagonal Architecture** (Ports and Adapters). Follow these 
 
 ## Exceptions
 
-- Always throw a typed subclass of `AbstractException`: `EntityNotFoundException`, `ForbiddenException`, `ConflictException`, `BadRequestException`, `InternalException`, `AuthenticationFailedException`.
+- Always throw a typed subclass of `CheckedException`: `EntityNotFoundException`, `ForbiddenException`, `ConflictException`, `BadRequestException`, `InternalException`, `AuthenticationFailedException`.
 - `externalMessage` = what the API client sees. `internalMessage` = what gets logged. Keep them separate.
 - Never return error responses manually from controllers — the `GlobalDefaultExceptionHandler` handles all mapping to HTTP status codes.
 
@@ -45,6 +45,14 @@ This project uses **Hexagonal Architecture** (Ports and Adapters). Follow these 
 
 - Use `SecurityUtil.getUsername()` (injected as a domain port) to get the authenticated user's username — never access `SecurityContextHolder` directly in domain or application layers.
 - Enforce roles with `@PreAuthorize(Constants.HAS_ROLE_USER)` or `Constants.HAS_ROLE_ADMIN` at the controller level.
+
+## WebSocket and STOMP
+
+- Put Spring WebSocket broker configuration in `application/config/`; keep STOMP interceptors and WebSocket exception advice in `infrastructure/`.
+- Authenticate the STOMP `CONNECT` frame with the bearer token. The `/ws` HTTP handshake may be public only because browser WebSocket APIs cannot reliably attach that header.
+- Restrict each inbound `SEND` and `SUBSCRIBE` destination. Do not permit raw broker destinations to clients.
+- Never accept the sender from a message payload. Resolve it through `SecurityUtil.getUsername()` in the application service and authorize the action there.
+- STOMP handlers do not return REST responses. Map typed exceptions in `GlobalWebSocketExceptionHandler` to the originating user's error queue.
 
 ## Mapping
 

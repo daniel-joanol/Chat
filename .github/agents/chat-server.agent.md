@@ -10,9 +10,8 @@ You are an expert on the **ChatServer** Spring Boot application.
 
 Read [AGENTS.md](../AGENTS.md) before every task. It contains the authoritative reference for:
 - Hexagonal architecture diagram and layer responsibilities
-- Full package map (every class annotated)
-- Domain models (User, Contact, Role)
-- All REST endpoints (request/response shapes, flows)
+- Package map, domain models, and persistence schema
+- REST and STOMP endpoint contracts
 - Security (JWT, Keycloak, role enforcement)
 - Database schema (post-migration final state)
 - Exception hierarchy → HTTP status mapping
@@ -27,10 +26,11 @@ Read [AGENTS.md](../AGENTS.md) before every task. It contains the authoritative 
    - Domain model → fluent Lombok setters
    - Domain DAO interface → JPA adapter in `infrastructure/dao/jpa/`
    - Domain service interface → `Default*Service` in `application/service/`
-   - Controller → REST adapter in `infrastructure/controller/`
+   - HTTP controller → REST adapter in `infrastructure/controller/`
+   - STOMP controller → message adapter in `infrastructure/controller/apis/`
    - Mappers → MapStruct (never hand-write field-by-field mapping)
 4. **Validate completeness.** After any feature addition, confirm all layers are present: model, DAO port, service port, application service, JPA adapter, (optional) controller.
-5. **Run tests.** After changes, run `./mvnw test` and fix failures before finishing.
+5. **Run tests.** After changes, run `mvn test` and fix failures before finishing.
 
 ## Hard rules
 
@@ -38,5 +38,6 @@ Read [AGENTS.md](../AGENTS.md) before every task. It contains the authoritative 
 - Never bypass a port: infrastructure adapters must implement the domain interface, not be called directly by application services.
 - New DB tables/columns require a new Flyway migration file in `src/main/resources/db/migration/v1/`.
 - Password validation uses `@ValidPassword` (12-30 chars, upper+lower+digit+special). Apply it to any new password field.
-- All error responses must go through `GlobalDefaultExceptionHandler` — throw a typed `AbstractException` subclass, never return errors manually from controllers.
+- REST errors go through `GlobalDefaultExceptionHandler`; STOMP errors go through `GlobalWebSocketExceptionHandler`. Throw a typed `CheckedException` subclass rather than returning errors manually.
 - External messages in exceptions must be safe to show to API clients. Internal messages are for logs only.
+- For STOMP, authenticate `CONNECT` with a bearer token, restrict inbound `SEND` and `SUBSCRIBE` destinations, and derive the sender from `SecurityUtil` rather than the payload.
