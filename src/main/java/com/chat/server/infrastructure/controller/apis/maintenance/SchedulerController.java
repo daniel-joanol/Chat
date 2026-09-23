@@ -35,12 +35,12 @@ public class SchedulerController {
       summary = "Purge incomplete users",
       description = "Endpoint to trigger the purge of incomplete users."
   )
-  @ApiResponse(responseCode = "200", description = "Purge started")
+  @ApiResponse(responseCode = "202", description = "Purge started")
   @PostMapping("/purge-incomplete-users")
-  public ResponseEntity<String> purgeIncompleteUsers() {
+  public ResponseEntity<Void> purgeIncompleteUsers() {
     String currentUser = securityUtil.getUsername();
     purgeIncompleteUsersTask.asyncStart(currentUser);
-    return ResponseEntity.ok("Purge started");
+    return ResponseEntity.accepted().build();
   }
   
 }
