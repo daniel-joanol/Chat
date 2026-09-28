@@ -31,6 +31,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
                 "/rest/v1/public/**",
+              Constants.WEBSOCKET_ENDPOINT + "/**",
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
                 "/swagger-ui.html")
@@ -62,7 +63,15 @@ public class SecurityConfig {
         }
       }
 
-      return new JwtAuthenticationToken(jwt, authorities);
+      String username = jwt.getClaimAsString("preferred_username");
+      if (username == null || username.isBlank()) {
+        username = jwt.getClaimAsString("username");
+      }
+      if (username == null || username.isBlank()) {
+        username = jwt.getSubject();
+      }
+
+      return new JwtAuthenticationToken(jwt, authorities, username);
     };
   }
 

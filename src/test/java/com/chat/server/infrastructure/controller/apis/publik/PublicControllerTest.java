@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,21 +14,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.chat.server.domain.enumerator.UserRoleEnum;
 import com.chat.server.domain.model.UserFactory;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.UserService;
-import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.controller.mapper.UserDtoMapper;
 import com.chat.server.infrastructure.controller.request.LoginRequest;
 import com.chat.server.infrastructure.controller.request.UserRequest;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
-import com.chat.server.infrastructure.exception.InternalException;
 import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,9 +39,6 @@ class PublicControllerTest {
 
   @Mock
   private AuthenticationService authService;
-
-  @Mock
-  private SecurityUtil securityUtil;
 
   @InjectMocks
   private PublicController sut;
@@ -79,17 +72,6 @@ class PublicControllerTest {
     var response = sut.createUser(request);
     assertEquals(HttpStatusCode.valueOf(201), response.getStatusCode());
     assertEquals(UserRoleEnum.USER, response.getBody().getRoleName());
-  }
-
-  @Test
-  void logout_callsServiceAndReturnsNoContent() throws InternalException, EntityNotFoundException {
-    when(securityUtil.getUsername()).thenReturn("testuser");
-
-    ResponseEntity<Void> resp = sut.logout();
-
-    assertEquals(HttpStatusCode.valueOf(204), resp.getStatusCode());
-    verify(securityUtil).getUsername();
-    verify(userService).logout("testuser");
   }
 
 }

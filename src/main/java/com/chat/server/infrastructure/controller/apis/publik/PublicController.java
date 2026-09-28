@@ -14,7 +14,6 @@ import com.chat.server.domain.model.User;
 import com.chat.server.domain.model.UserFactory;
 import com.chat.server.domain.service.AuthenticationService;
 import com.chat.server.domain.service.UserService;
-import com.chat.server.domain.util.SecurityUtil;
 import com.chat.server.infrastructure.controller.mapper.UserDtoMapper;
 import com.chat.server.infrastructure.controller.request.LoginRequest;
 import com.chat.server.infrastructure.controller.request.UserRequest;
@@ -22,7 +21,6 @@ import com.chat.server.infrastructure.controller.response.UserResponse;
 import com.chat.server.infrastructure.exception.AuthenticationFailedException;
 import com.chat.server.infrastructure.exception.ConflictException;
 import com.chat.server.infrastructure.exception.EntityNotFoundException;
-import com.chat.server.infrastructure.exception.InternalException;
 import com.chat.server.infrastructure.exception.InternalUserForbiddenException;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,7 +41,6 @@ public class PublicController {
   private final UserService userService;
   private final UserDtoMapper userMapper;
   private final AuthenticationService authService;
-  private final SecurityUtil securityUtil;
 
   @Operation(
       summary = "Login",
@@ -93,15 +90,6 @@ public class PublicController {
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(response);
-  }
-
-  @Operation(summary = "Logout", description = "Mark current user as offline")
-  @ApiResponse(responseCode = "204", description = "User logged out")
-  @PostMapping("/logout")
-  public ResponseEntity<Void> logout() throws InternalException, EntityNotFoundException {
-    String username = securityUtil.getUsername();
-    userService.logout(username);
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
 }

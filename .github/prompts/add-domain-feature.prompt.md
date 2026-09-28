@@ -51,5 +51,5 @@ Reference [AGENTS.md](../AGENTS.md) for conventions, package structure, and nami
 - Add the table definition matching the JPA entity.
 
 ### 10. Verify
-- Run `./mvnw test` — fix any failures before finishing.
+- Run `mvn test` — fix any failures before finishing.
 - Confirm no `domain/` class imports anything from `org.springframework` or `jakarta.persistence`.

@@ -2,7 +2,7 @@
 description: "Add a new REST endpoint to an existing controller, or create a new controller, following project conventions."
 agent: "agent"
 tools: [read, edit, search, execute, todo]
-argument-hint: "HTTP method, path, and what it does, e.g. 'GET /rest/v1/contact — list all contacts for the authenticated user'"
+argument-hint: "HTTP method, path, and what it does, e.g. 'GET /rest/v1/internal/contact — list all contacts for the authenticated user'"
 ---
 
 Add a new REST endpoint to the ChatServer project.
@@ -41,7 +41,8 @@ Reference [AGENTS.md](../AGENTS.md) — especially sections 6 (REST API), 7 (Sec
   - Include `@Tag`, `@Operation`, and `@ApiResponses` Swagger annotations.
   - Return `ResponseEntity<T>` with an explicit HTTP status.
 - Public endpoints (no auth) go in `PublicController` under `@RequestMapping(Constants.PUBLIC_CONTROLLER)`.
+- Authenticated user operations belong under the internal API prefix. Do not place a JWT-dependent operation in `PublicController` merely because it concerns a user.
 
 ### 7. Verify
-- Run `./mvnw test`.
+- Run `mvn test`.
 - Check Swagger UI at `http://localhost:20002/swagger-ui.html` if the server is running.

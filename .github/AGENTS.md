@@ -10,7 +10,7 @@ Comprehensive reference for AI agents working on this codebase.
 It follows **Hexagonal Architecture** (Ports and Adapters).  
 Identity management is fully delegated to **Keycloak** (OAuth2 / JWT).  
 Persistence uses **PostgreSQL** with **Flyway** migrations.  
-The project is a work in progress; WebSocket messaging is declared as a dependency but not yet implemented in business logic.
+Direct messages are persisted and delivered live through authenticated STOMP over WebSocket.
 
 ---
 
@@ -20,7 +20,7 @@ The project is a work in progress; WebSocket messaging is declared as a dependen
 |---|---|
 | Language | Java 21 |
 | Framework | Spring Boot 3.5.7 |
-| Build | Maven (mvnw wrapper) |
+| Build | Maven (`mvn`) |
 | Security | Spring Security + OAuth2 Resource Server (JWT) |
 | Identity Provider | Keycloak 26 |
 | Database | PostgreSQL 16 |
@@ -79,16 +79,19 @@ com.chat.server
 │   ├── model/
 │   │   ├── User.java                   ← Core domain entity
 │   │   ├── Contact.java                ← User friendship link
+│   │   ├── DirectMessage.java          ← Persisted message between contacts
 │   │   ├── Role.java                   ← Keycloak role
 │   │   └── UserFactory.java            ← Factory: creates typed User instances
 │   ├── service/                        ← Inbound ports (use-case interfaces)
 │   │   ├── UserService.java
 │   │   ├── ContactService.java
+│   │   ├── DirectMessageService.java
 │   │   ├── RoleService.java
 │   │   └── PropertyService.java
 │   ├── dao/                            ← Outbound ports (storage/external interfaces)
 │   │   ├── UserDao.java
 │   │   ├── ContactDao.java
+│   │   ├── DirectMessageDao.java
 │   │   ├── RoleDao.java
 │   │   ├── PropertyDao.java
 │   │   └── AccessManagementDao.java    ← Keycloak port
@@ -106,11 +109,13 @@ com.chat.server
 │   ├── service/
 │   │   ├── DefaultUserService.java     ← Implements UserService
 │   │   ├── DefaultContactService.java  ← Implements ContactService
+│   │   ├── DefaultDirectMessageService.java ← Implements DirectMessageService
 │   │   ├── DefaultRoleService.java     ← Implements RoleService
 │   │   └── DefaultPropertyService.java ← Implements PropertyService
 │   ├── config/
 │   │   ├── SecurityConfig.java         ← Spring Security filter chain
 │   │   └── OpenApiConfig.java          ← Swagger config
+│   │   └── WebSocketConfig.java        ← STOMP broker and inbound channel config
 │   └── util/
 │       ├── AESEncryptUtil.java         ← Implements EncryptUtil (AES/CBC/PKCS5)
 │       ├── JWTSecurityUtil.java        ← Implements SecurityUtil (reads JWT claims)
@@ -118,8 +123,11 @@ com.chat.server
 │
 └── infrastructure/
     ├── controller/
-    │   ├── PublicController.java        ← POST /rest/v1/public/login, POST /rest/v1/public/logout, POST /rest/v1/public/user
-    │   ├── ContactController.java       ← POST /rest/v1/contact, DELETE /rest/v1/contact/{id}
+    │   ├── apis/internal/
+    │   │   ├── ContactController.java   ← POST/DELETE /rest/v1/internal/contact
+    │   │   ├── InternalUserController.java ← POST /rest/v1/internal/user/logout
+    │   │   └── DirectMessageWebSocketController.java ← STOMP /app/direct-messages
+    │   ├── apis/publik/PublicController.java ← POST /rest/v1/public/login, POST /rest/v1/public/user
     │   ├── request/                     ← LoginRequest, UserRequest, ContactRequest (records)
     │   ├── response/                    ← UserResponse, ContactResponse
     │   ├── mapper/                      ← UserDtoMapper, ContactDtoMapper (MapStruct)
@@ -130,6 +138,7 @@ com.chat.server
     │   ├── jpa/
     │   │   ├── JpaUserDao.java          ← Implements UserDao
     │   │   ├── JpaContactDao.java       ← Implements ContactDao
+    │   │   ├── JpaDirectMessageDao.java ← Implements DirectMessageDao
     │   │   ├── JpaRoleDao.java          ← Implements RoleDao
     │   │   └── JpaPropertyDao.java      ← Implements PropertyDao
     │   └── http/
@@ -140,6 +149,7 @@ com.chat.server
     │   ├── jpa/
     │   │   ├── UserJpaRepository.java   ← Spring Data JPA (entity: _user)
     │   │   ├── ContactJpaRepository.java
+    │   │   ├── DirectMessageJpaRepository.java
     │   │   ├── RoleJpaRepository.java
     │   │   ├── PropertyJpaRepository.java
     │   │   ├── entity/                  ← JPA entities (UserEntity, ContactEntity, RoleEntity, PropertyEntity)
@@ -147,7 +157,7 @@ com.chat.server
     │   └── http/
     │       └── KeycloakHttpRepository.java  ← Raw Unirest HTTP calls to Keycloak Admin API
     └── exception/
-        ├── AbstractException.java       ← Base: externalMessage (shown to client) + internalMessage (logged)
+        ├── CheckedException.java        ← Base: externalMessage (shown to client) + internalMessage (logged)
         ├── AuthenticationFailedException.java  ← → 401
         ├── BadRequestException.java            ← → 400
         ├── ConflictException.java              ← → 409
@@ -155,9 +165,12 @@ com.chat.server
         ├── ForbiddenException.java             ← → 403
         ├── InternalException.java              ← → 500
         ├── controller/GlobalDefaultExceptionHandler.java  ← @ControllerAdvice
+        ├── websocket/GlobalWebSocketExceptionHandler.java ← STOMP error frames
         └── response/
             ├── ErrorResponse.java       ← { traceId: UUID, message: String }
             └── ErrorResponseFactory.java
+        └── websocket/
+          └── JwtStompAuthenticationInterceptor.java ← Authenticates STOMP CONNECT
 ```
 
 ---
@@ -237,16 +250,17 @@ Authenticate a user and receive a JWT.
 
 ---
 
-#### POST `/rest/v1/public/logout`
+#### POST `/rest/v1/internal/user/logout`
 Mark the current authenticated user as offline.
+
+**Required role:** `USER`
 
 **Responses:**
 - `204` — logout successful
-- `5xx` — if the current authenticated user cannot be resolved from the security context
 
 **Notes:**
 - This endpoint obtains the current username from the JWT and updates the user's status to `OFFLINE`.
-- It is exposed under the public controller but still requires a valid authenticated user in the security context.
+- It does not revoke existing access tokens.
 
 ---
 
@@ -276,7 +290,7 @@ Register a new external user.
 
 All requests must include: `Authorization: Bearer <token>`
 
-#### POST `/rest/v1/contact`
+#### POST `/rest/v1/internal/contact`
 Add a contact to the authenticated user's list.  
 **Required role:** `USER`
 
@@ -294,7 +308,7 @@ Add a contact to the authenticated user's list.
 
 ---
 
-#### DELETE `/rest/v1/contact/{id}`
+#### DELETE `/rest/v1/internal/contact/{id}`
 Remove a contact.  
 **Required role:** `USER`
 
@@ -344,12 +358,31 @@ Remove a contact.
 
 - Spring Security with OAuth2 JWT Resource Server.
 - JWT issued by Keycloak realm `master`.
-- `SecurityConfig` permits: `/rest/v1/public/**`, `/v3/api-docs/**`, `/swagger-ui/**`.
+- `SecurityConfig` permits: `/rest/v1/public/**`, `/ws/**`, `/v3/api-docs/**`, `/swagger-ui/**`.
 - All other requests require a valid JWT.
 - Method-level security enabled (`@EnableMethodSecurity`).
 - `ContactController` uses `@PreAuthorize("hasRole('USER')")`.
 - Current user is extracted by `JWTSecurityUtil` from `SecurityContextHolder` → JWT claim `preferred_username`.
 - CSRF is disabled (stateless REST API).
+
+### WebSocket security
+
+- `/ws` is public only for the HTTP upgrade. Native browser WebSocket clients cannot reliably send an `Authorization` header during that request.
+- Clients must provide `Authorization: Bearer <token>` in the STOMP `CONNECT` frame. `JwtStompAuthenticationInterceptor` validates it and makes the JWT authentication available to message handling.
+- Only sessions with `ROLE_USER` may send to `/app/direct-messages` or subscribe to `/user/queue/direct-messages` and `/user/queue/errors`.
+- Never accept a sender identity from a STOMP payload or destination. Application services obtain it from `SecurityUtil.getUsername()`.
+- Raw `/queue/**` broker destinations and other application destinations are rejected.
+
+### Direct-message STOMP contract
+
+| Action | Destination | Payload or result |
+|---|---|---|
+| Connect | STOMP `CONNECT` | Native `Authorization: Bearer <token>` header |
+| Send | `/app/direct-messages` | `{ "recipientUsername": "...", "content": "..." }` |
+| Receive | `/user/queue/direct-messages` | `DirectMessageResponse`, delivered only to the recipient |
+| Receive error | `/user/queue/errors` | `WebSocketErrorResponse`, delivered only to the sender |
+
+Messages are persisted before delivery. The sender must have added the recipient as a directional contact. Offline replay, delivery receipts, and read receipts are not implemented.
 
 ---
 
@@ -381,6 +414,15 @@ PostgreSQL database: `chat_server` | schema: `chat`
 | friend_id | UUID | FK → _user(id) |
 | created_at | TIMESTAMPTZ | default `now()` |
 | UNIQUE | (user_id, friend_id) | |
+
+### Table: `direct_message`
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | PK |
+| sender_id | UUID | FK → `_user(id)`; cannot equal `recipient_id` |
+| recipient_id | UUID | FK → `_user(id)` |
+| content | text | NOT NULL |
+| sent_at | TIMESTAMPTZ | NOT NULL, defaults to current time |
 
 ### Table: `role`
 | Column | Type | Notes |
@@ -446,7 +488,7 @@ Output format: Base64(`IV[16 bytes] + ciphertext`).
 
 ## 11. Exception Handling
 
-All exceptions extend `AbstractException`, which carries:
+Application exceptions extend `CheckedException`, which carries:
 - `externalMessage` — safe message returned to the API client
 - `internalMessage` — full message logged internally
 
@@ -464,6 +506,8 @@ All exceptions extend `AbstractException`, which carries:
 | `JSONException`, `UnirestException`, etc. | 500 |
 
 Every error response includes a `traceId` (UUID) that is also logged server-side.
+
+`GlobalWebSocketExceptionHandler` is separate from REST advice. It converts `BadRequestException`, `ForbiddenException`, and `EntityNotFoundException` into `WebSocketErrorResponse` frames sent to the originating user's `/user/queue/errors` subscription. Do not return HTTP error responses from STOMP handlers.
 
 ---
 
@@ -519,6 +563,7 @@ Schema: `chat`
 | `V1_01__Create_schema.sql` | Creates `_user` and `contact` tables, enables `uuid-ossp` extension |
 | `V1_02__Add_role_schema.sql` | Creates `role` and `property` tables, seeds roles and properties, refactors `_user` (adds first_name, last_name, role_id FK, is_enabled, is_creation_completed; removes password column) |
 | `V1_03__Update_contact_schema.sql` | Removes deprecated `is_active` column from `contact` |
+| `V1_04__Create_direct_message_schema.sql` | Creates `direct_message` and sender/recipient timestamp indexes |
 
 ---
 
@@ -526,13 +571,13 @@ Schema: `chat`
 
 ```bash
 # Run all tests
-./mvnw test
+mvn test
 
 # Build (skip tests)
-./mvnw package -DskipTests
+mvn package -DskipTests
 
 # Run locally
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 Server starts at `http://localhost:20002`.
@@ -551,12 +596,14 @@ Server starts at `http://localhost:20002`.
 8. **Service account for admin ops** — Any Keycloak admin operation (create, delete, assign role) is performed by first authenticating the `default_internal_user` service account.
 9. **URL prefix** — All REST paths start with `/rest/v1`.
 10. **Role enforcement** — `SecurityConfig` handles global auth; method-level `@PreAuthorize` enforces role-specific access.
+11. **STOMP boundaries** — WebSocket configuration belongs in `application/config`; STOMP interceptors and exception advice belong in `infrastructure`. Keep STOMP controllers limited to mapping inbound frames and publishing responses.
+12. **Message authorization** — derive senders from the authenticated session, authorize contact relationships in the application service, persist before live delivery, and send failures only to `/user/queue/errors`.
 
 ---
 
 ## 17. Known Limitations / Future Work
 
-- WebSocket dependency is included but real-time messaging is not yet implemented.
-- Only two controllers exist (`PublicController`, `ContactController`). User management (get user, update, delete) is implemented in the service layer but not exposed via a controller yet.
+- Direct messages are live-only: no offline replay, delivery receipts, or read receipts.
+- User management beyond logout (get, update, delete) is implemented in the service layer but not exposed via a controller yet.
 - Keycloak realm is hardcoded to `master`; production deployments should use a dedicated realm.
 - CSRF is disabled — acceptable for stateless JWT APIs, but worth reviewing if session-based flows are added.
