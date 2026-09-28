@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 
 import com.chat.server.infrastructure.scheduled.PurgeIncompleteUsersTask;
 import com.chat.server.domain.util.SecurityUtil;
@@ -31,7 +32,7 @@ class SchedulerControllerTest {
 
     var resp = sut.purgeIncompleteUsers();
 
-    assertEquals(200, resp.getStatusCodeValue());
+    assertEquals(HttpStatus.ACCEPTED, resp.getStatusCode());
     verify(securityUtil).getUsername();
     verify(purgeIncompleteUsersTask).asyncStart("adminUser");
   }
