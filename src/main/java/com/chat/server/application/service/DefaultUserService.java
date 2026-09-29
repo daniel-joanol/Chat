@@ -98,6 +98,7 @@ public class DefaultUserService implements UserService {
      return accessManagementDao.getUser(jwt, user.getUsername());
    }).getKeycloakId();
    dbUser.setKeycloakId(keycloakId);
+   user.setKeycloakId(keycloakId);
    dbUser = userDao.save(dbUser);
 
    this.executeWithRetry(jwt -> {
@@ -110,8 +111,8 @@ public class DefaultUserService implements UserService {
      return null;
    });
 
-   user.setIsCreationCompleted(true);
-   return userDao.save(user);
+   dbUser.setIsCreationCompleted(true);
+   return userDao.save(dbUser);
  }
 
  private void validateEmail(String email)
