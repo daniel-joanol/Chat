@@ -30,16 +30,16 @@ Code example:
 @SpringBootApplication
 public class ChatServerApplication {
 
-	  public static void main(String[] args) throws Exception {
-	      SpringApplication.run(ChatServerApplication.class, args);
+	public static void main(String[] args) throws Exception {
+	  SpringApplication.run(ChatServerApplication.class, args);
 
-	      String generatedKey = new AESEncryptUtil("temporary-key").generateKey();
-	      EncryptUtil encryptUtil = new AESEncryptUtil(generatedKey);
-	      String encryptedPass = encryptUtil.encrypt("PASSWORD TO ENCRYPT", generatedKey);
+	  String generatedKey = new AESEncryptUtil("temporary-key").generateKey();
+	  EncryptUtil encryptUtil = new AESEncryptUtil(generatedKey);
+	  String encryptedPass = encryptUtil.encrypt("PASSWORD TO ENCRYPT", generatedKey);
 
-	      System.out.println("KEY: " + generatedKey);
-	      System.out.println("PASS: " + encryptedPass);
-	  }
+	  System.out.println("KEY: " + generatedKey);
+	  System.out.println("PASS: " + encryptedPass);
+	}
 }
 ```
 
