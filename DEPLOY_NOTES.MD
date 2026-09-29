@@ -58,8 +58,10 @@ Visit `http://localhost:8081/`.
 - Set the environment variable `KEYCLOAk_CLIENT_CONTAINER_ID` with the actual client UUID.
 - Add the keycloak role IDs to the role table used by the application.
 
-### Add admin user to the database
-- Insert the admin user record into the `_user` table.
+### Update admin user in the database
+- Keep the database admin record in sync with the Keycloak bootstrap user `admin`.
+- Use the Flyway migration to upsert the `_user` row instead of creating a second manual user record.
+- The migration is idempotent and should update the existing admin user rather than creating a duplicate.
 
 ## Why this matters for the project
 This setup is not just infrastructure wiring; it demonstrates a backend that integrates identity, secrets management, and secure messaging in a realistic way. For a portfolio or interview, these are strong talking points:
