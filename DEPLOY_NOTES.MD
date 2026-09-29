@@ -13,8 +13,8 @@ This project is meant to be run with PostgreSQL and Keycloak in the same local s
 docker compose up -d
 ```
 
-### Create a Keycloak schema
-- Create the `keycloak` schema inside the `chat_server` database used by the application.
+### Create database schemas
+- Create the `keycloak` and `chat` schemas inside the `chat_server` database used by the application.
 
 ### Generate an encryption key
 The service uses AES encryption to protect sensitive values before they are stored. In this project the default Keycloak password is encrypted before it is persisted to the `property` table.
