@@ -1,52 +1,72 @@
 # ChatServer Deployment Notes (Docker + Keycloak + Postgres)
 
+This project is meant to be run with PostgreSQL and Keycloak in the same local stack. The setup below is a practical guide for bootstrapping the service and highlights the security patterns that are interesting to discuss in a job interview or portfolio review.
+
 ## Prerequisites
 - Docker and Docker Compose installed.
-- Ports 8081 (Keycloak) and 5432 (Postgres) available. (Or change settings on docker-compose.yml)
+- Ports 8081 (Keycloak) and 5432 (Postgres) available. If needed, update the mappings in `docker-compose.yml`.
 
 ## Installing Postgres and Keycloak
-### Create docker container 
-- Execute the docker compose on the background.
-```docker compose up -d```
+### Create docker container
+- Start the local infrastructure in the background:
+```bash
+docker compose up -d
+```
 
-### Create Keycloak schema
-- Add the schema keycloak inside the `chat-server` database.
+### Create database schemas
+- Create the `keycloak` and `chat` schemas inside the `chat_server` database used by the application.
 
 ### Generate an encryption key
-- Generate an encryption key and them use it to encrypt the password that will be used for the default Keycloak user.
-- Note: The default keycloak user is the one used in the keycloak petitions (to create user, update password, etc).
-- Save the key as the environmental property `CHAT_ENCRYPTION_KEY`.
-- Save the encrypted password as the value of the property `DEFAULT_KEYCLOAL_USER_PASS` on databse, table `property`.
-- Code example: 
-```
+The service uses AES encryption to protect sensitive values before they are stored. In this project the default Keycloak password is encrypted before it is persisted to the `property` table.
+
+- Generate a secure base64-encoded key.
+- Store it as the environment variable `CHAT_ENCRYPTION_KEY`.
+- Store the encrypted password as the value of `DEFAULT_KEYCLOAL_USER_PASS` in the database `property` table.
+
+The code uses AES-256 in CBC mode with a random IV, then Base64-encodes the IV + ciphertext. This is a good example of a production-minded security pattern: the secret is never persisted in plaintext.
+
+Code example:
+```java
 @SpringBootApplication
 public class ChatServerApplication {
 
 	public static void main(String[] args) throws Exception {
-		SpringApplication.run(ChatServerApplication.class, args);
-    EncryptUtil encryptUtil = new AESEncryptUtil();
-    String key = encryptUtil.generateKey();
-    String encryptedPass = encryptUtil.encrypt("PASSWORD TO ENCRYPT", key);
-    System.out.println("KEY: " + key);
-    System.out.println("PASS: " + encryptedPass);
-	}
+	  SpringApplication.run(ChatServerApplication.class, args);
 
+	  String generatedKey = new AESEncryptUtil("temporary-key").generateKey();
+	  EncryptUtil encryptUtil = new AESEncryptUtil(generatedKey);
+	  String encryptedPass = encryptUtil.encrypt("PASSWORD TO ENCRYPT", generatedKey);
+
+	  System.out.println("KEY: " + generatedKey);
+	  System.out.println("PASS: " + encryptedPass);
+	}
 }
 ```
 
 ### Configure Keycloak
-```http://localhost:8081/```
-- Create client `chat` with client protocol `openid-connect`.
-- Enable client authentication on settings.
+Visit `http://localhost:8081/`.
+
+- Create client `chat` with protocol `openid-connect`.
+- Enable client authentication in the client settings.
 - Add roles `USER` and `ADMIN`.
-- Copy the `client-secret` from credentials.
-- Set the environmental property `KEYCLOAK_CLIENT_SECRET` with the client-secret value.
-- Add client role ADMIN to the user `admin` (the one set on docker-compose.yml).
-- Create the default user with username `default_internal_user`, with `no-actions-required` and roles `ADMIN` from client `chat` and every role from client `master-realm`.
+- Copy the `client-secret` from the Credentials tab.
+- Set the environment variable `KEYCLOAK_CLIENT_SECRET` with the client secret value.
+- Add the client role `ADMIN` to the user `admin` configured in `docker-compose.yml`.
+- Create the default internal user `default_internal_user` with `no-actions-required` and grant the `ADMIN` role from client `chat` and all required roles from the `master-realm` client.
 
-### Add keycloak ids to database
-- Set the environmental property `KEYCLOAk_CLIENT_CONTAINER_ID` with the client id (the actual UUID).
-- Add the role ids to the role table.
+### Add Keycloak IDs to the database
+- Set the environment variable `KEYCLOAk_CLIENT_CONTAINER_ID` with the actual client UUID.
+- Add the keycloak role IDs to the role table used by the application.
 
-### Add admin user to database.
-- Add the user to the `_user` table on database.
+### Update admin user in the database
+- Keep the database admin record in sync with the Keycloak bootstrap user `admin`.
+- Use the Flyway migration to upsert the `_user` row instead of creating a second manual user record.
+- The migration is idempotent and should update the existing admin user rather than creating a duplicate.
+
+## Why this matters for the project
+This setup is not just infrastructure wiring; it demonstrates a backend that integrates identity, secrets management, and secure messaging in a realistic way. For a portfolio or interview, these are strong talking points:
+
+- RBAC with Keycloak and JWT validation.
+- Cryptographic handling of sensitive configuration values.
+- Database-backed user and role management with Flyway migrations.
+- Real-time messaging with STOMP security boundaries.
