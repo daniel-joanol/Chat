@@ -209,7 +209,8 @@ def main(username: str, password: str):
         WS.close()
       except Exception:
         pass
-        print("Disconnected.")
+      
+  print("Disconnected.")
    
    
 if __name__ == "__main__":
